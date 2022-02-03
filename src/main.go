@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"spotify-downloader/src/odeslii"
 	"spotify-downloader/src/spotify"
 	"strings"
 )
@@ -77,13 +78,32 @@ func main() {
 				"Title: %s\n"+
 					"Artist: %s\n"+
 					"Image: %s\n"+
-					"URL: %s\n",
+					"URL: %s\n"+
+					"Id: %s\n",
 				track.Name,
 				strings.Join(artistStrings, "; "),
 				track.Album.Images[0].Url,
-				track.Href)))
+				track.Href,
+				track.Id)))
 			rw.Write([]byte("---\n"))
 		}
+	})
+
+	http.HandleFunc("/s2y/", func(rw http.ResponseWriter, r *http.Request) {
+		id := r.URL.Path[len("/s2y/"):]
+
+		link, exists, err := odeslii.GetYoutubeLinkBySpotifyId(id)
+		if err != nil {
+			log.Default().Print(err)
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if !exists {
+			rw.Write([]byte(fmt.Sprintf("Odeslii can't find a YouTube link for a track with a Spotify id %s\n", link)))
+			return
+		}
+
+		rw.Write([]byte(fmt.Sprintf("Here's your link: %s", link)))
 	})
 
 	log.Println("Starting a server at :8080...")

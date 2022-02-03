@@ -90,6 +90,7 @@ func (t Track_Type) Print() {
 	}
 	fmt.Println()
 
+	fmt.Printf("Id: %s\n", t.Id)
 	fmt.Printf("Album: %s\n", t.Album.Name)
 	fmt.Printf("Duration (ms): %d\n", t.Duration_ms)
 	fmt.Printf("Href: %s\n", t.Href)
