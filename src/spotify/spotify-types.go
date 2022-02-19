@@ -9,14 +9,11 @@ type ClientToken struct {
 }
 
 type Followers_Type struct {
-	// Href  string
 	Total int
 }
 
 type Image struct {
-	// Height int
 	Url string
-	// Width  int
 }
 
 type Owner_Type struct {
@@ -46,41 +43,22 @@ type Artist struct {
 }
 
 type Album_Type_Go struct {
-	// Album_type             string
 	Artists []Artist
-	// Available_markets      []string
-	// External_urls          map[string]string
-	Href   string
-	Id     string
-	Images []Image
-	Name   string
-	// Release_date           string
-	// Release_date_precision string
-	// Total_tracks           int
-	// Type                   string
-	// Uri                    string
+	Href    string
+	Id      string
+	Images  []Image
+	Name    string
 }
 
 type Track_Type struct {
-	Album   Album_Type_Go
-	Artists []Artist
-	// Available_markets []string
-	// Disc_number       int
-	Duration_ms int
-	// Episode           bool
-	// Explicit          bool
-	// External_ids      map[string]string
-	// External_urls     map[string]string
-	Href string
-	Id   string
-	// Is_local          bool
-	Name string
-	// Popularity        int
-	Preview_url string
-	// Track             bool
+	Album        Album_Type_Go
+	Artists      []Artist
+	Duration_ms  int
+	Href         string
+	Id           string
+	Name         string
+	Preview_url  string
 	Track_number int
-	// Type              string
-	// Uri               string
 }
 
 func (t Track_Type) Print() {
@@ -98,10 +76,9 @@ func (t Track_Type) Print() {
 }
 
 type TrackEntry struct {
-	Added_at string
-	Added_by AddedBy_Type
-	Is_local bool
-	// "primary_color" : null,
+	Added_at        string
+	Added_by        AddedBy_Type
+	Is_local        bool
 	Track           Track_Type
 	Video_thumbnail map[string]string
 }
@@ -126,19 +103,9 @@ type Playlist struct {
 	Description string
 	Type        string
 	Owner       Owner_Type
-
-	// Public        bool
-	// Collaborative bool
-
-	// Followers Followers_Type
-	Href   string
-	Images []Image
-	// "primary_color" : null,
-	// Snapshot_id   string
-	// Uri           string
-	// External_urls map[string]string
-
-	Tracks Tracks_Type
+	Href        string
+	Images      []Image
+	Tracks      Tracks_Type
 }
 
 func (p Playlist) Print() {

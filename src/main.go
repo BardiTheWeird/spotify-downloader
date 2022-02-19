@@ -2,13 +2,14 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"spotify-downloader/src/models"
 	"spotify-downloader/src/odeslii"
 	"spotify-downloader/src/spotify"
-	"strings"
 )
 
 var (
@@ -44,6 +45,10 @@ func configureApp() {
 	}
 }
 
+func SetContentTypeToJson(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Add("Content-Type", "application/json")
+}
+
 func main() {
 	configureApp()
 	spotify.Authenticate(appConfig.GetB64())
@@ -52,58 +57,61 @@ func main() {
 		rw.Write([]byte("there might be a list of all the endpoints here sometime in the future"))
 	})
 
+	// 500
+	// 401 => not authorized (maybe?)
+	// 404 => no playlist with such id
+	// 429 => too many requests
+	// 200 + playlist payload
 	http.HandleFunc("/playlist/", func(rw http.ResponseWriter, r *http.Request) {
+		SetContentTypeToJson(rw, r)
 		id := r.URL.Path[len("/playlist/"):]
 
-		playlist, statusCode, err := spotify.GetPlaylistById(id)
-		if statusCode == 401 {
-			spotify.Authenticate(appConfig.GetB64())
-			playlist, statusCode, err = spotify.GetPlaylistById(id)
+		spotifyPlaylist, status := spotify.GetPlaylistById(id)
+		if status == spotify.BadOrExpiredToken {
+			spotifyPlaylist, status = spotify.GetPlaylistById(id)
 		}
-		if statusCode != 0 {
+
+		switch status {
+		case spotify.ErrorSendingRequest, spotify.UnexpectedResponseStatus:
 			rw.WriteHeader(http.StatusInternalServerError)
-			log.Fatal(err)
-			return
-		}
-
-		rw.Write([]byte("Tracks:\n------\n"))
-		for _, v := range playlist.Tracks.Items {
-			track := v.Track
-			artistStrings := make([]string, 0, len(track.Artists))
-			for _, artist := range track.Artists {
-				artistStrings = append(artistStrings, artist.Name)
-			}
-
-			rw.Write([]byte(fmt.Sprintf(
-				"Title: %s\n"+
-					"Artist: %s\n"+
-					"Image: %s\n"+
-					"URL: %s\n"+
-					"Id: %s\n",
-				track.Name,
-				strings.Join(artistStrings, "; "),
-				track.Album.Images[0].Url,
-				track.Href,
-				track.Id)))
-			rw.Write([]byte("---\n"))
+		case spotify.BadOrExpiredToken, spotify.BadOAuth:
+			rw.WriteHeader(http.StatusUnauthorized)
+		case spotify.ExceededRateLimits:
+			rw.WriteHeader(http.StatusTooManyRequests)
+		case spotify.NotFound:
+			rw.WriteHeader(http.StatusNotFound)
+		case spotify.Ok:
+			playlist := models.FromSpotifyPlaylist(spotifyPlaylist)
+			bytes, _ := json.Marshal(playlist)
+			SetContentTypeToJson(rw, r)
+			rw.Write(bytes)
 		}
 	})
 
+	// 500
+	// 404 => (no such id / no yt link) -> error payload
+	// 200 + songToDownload payload
 	http.HandleFunc("/s2y/", func(rw http.ResponseWriter, r *http.Request) {
-		id := r.URL.Path[len("/s2y/"):]
+		SetContentTypeToJson(rw, r)
 
-		link, exists, err := odeslii.GetYoutubeLinkBySpotifyId(id)
-		if err != nil {
-			log.Default().Print(err)
+		spotifyId := r.URL.Path[len("/s2y/"):]
+
+		songToDownload, statusCode := odeslii.GetYoutubeLinkBySpotifyId(spotifyId)
+
+		switch statusCode {
+		case odeslii.ErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
-			return
+		case odeslii.NoSongWithSuchId:
+			rw.WriteHeader(http.StatusNotFound)
+			rw.Write(models.CreateErrorPayload(400, fmt.Sprintf("No entry for song with id %s", spotifyId)))
+		case odeslii.NoYoutubeLinkForSong:
+			rw.WriteHeader(http.StatusNotFound)
+			rw.Write(models.CreateErrorPayload(404, fmt.Sprintf("No YouTube link for song with id %s", spotifyId)))
+		case odeslii.Found:
+			rw.WriteHeader(http.StatusOK)
+			bytes, _ := json.Marshal(songToDownload)
+			rw.Write(bytes)
 		}
-		if !exists {
-			rw.Write([]byte(fmt.Sprintf("Odeslii can't find a YouTube link for a track with a Spotify id %s\n", link)))
-			return
-		}
-
-		rw.Write([]byte(fmt.Sprintf("Here's your link: %s", link)))
 	})
 
 	log.Println("Starting a server at :8080...")

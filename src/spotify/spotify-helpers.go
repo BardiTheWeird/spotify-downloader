@@ -28,22 +28,49 @@ func Authenticate(credentialsB64 string) {
 	defer response.Body.Close()
 }
 
-func GetPlaylistById(id string) (Playlist, int, error) {
+type GetPlaylistResposeStatus int
+
+const (
+	Ok GetPlaylistResposeStatus = iota
+	ErrorSendingRequest
+	BadOrExpiredToken
+	BadOAuth
+	ExceededRateLimits
+	NotFound
+	UnexpectedResponseStatus
+)
+
+func GetPlaylistById(id string) (Playlist, GetPlaylistResposeStatus) {
 	req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/playlists/"+id, nil)
 	req.Header.Add("Authorization", token.TokenType+" "+token.AccessToken)
 	req.Header.Add("Content-Type", "application/json")
 
 	response, err := http.DefaultClient.Do(req)
+	// actual error with a request or connectivity
 	if err != nil {
-		return Playlist{}, -1, err
+		fmt.Printf("error sending a request to %s: %s\n", req.URL, err)
+		return Playlist{}, ErrorSendingRequest
 	}
 
-	if response.StatusCode != 200 {
-		return Playlist{}, response.StatusCode, fmt.Errorf("%d %s StatusCode when queying a playlist %s", response.StatusCode, response.Status, id)
+	switch response.StatusCode {
+	case 401:
+		return Playlist{}, BadOrExpiredToken
+	case 403:
+		return Playlist{}, BadOAuth
+	case 404:
+		return Playlist{}, NotFound
+	case 429:
+		return Playlist{}, ExceededRateLimits
+	case 200:
+		// bytes, _ := ioutil.ReadAll(response.Body)
+		// fmt.Println("Response from Spotify:", string(bytes))
+
+		var playlist Playlist
+		// json.Unmarshal(bytes, &playlist)
+		json.NewDecoder(response.Body).Decode(&playlist)
+		return playlist, Ok
+	default:
+		fmt.Printf("Response status %d was not expected\n", response.StatusCode)
+		return Playlist{}, UnexpectedResponseStatus
 	}
-
-	var playlist Playlist
-	json.NewDecoder(response.Body).Decode(&playlist)
-
-	return playlist, 0, nil
 }

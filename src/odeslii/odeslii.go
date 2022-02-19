@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"spotify-downloader/src/models"
 )
 
 var endpoint string = "https://api.song.link/v1-alpha.1/links"
@@ -20,34 +21,48 @@ type OdesliiResponse struct {
 	LinksByPlatform LinksByPlatform
 }
 
-func GetYoutubeLinkBySpotifyId(id string) (string, bool, error) {
+type QueryResponseStatus int
+
+const (
+	Found QueryResponseStatus = iota
+	ErrorSendingRequest
+	NoSongWithSuchId
+	NoYoutubeLinkForSong
+)
+
+func GetYoutubeLinkBySpotifyId(spotifyId string) (models.SongToDownload, QueryResponseStatus) {
 	req, _ := http.NewRequest("GET", endpoint, nil)
 	query := req.URL.Query()
 	query.Add("platform", "spotify")
 	query.Add("type", "song")
-	query.Add("id", id)
+	query.Add("id", spotifyId)
 	req.URL.RawQuery = query.Encode()
 
 	response, err := http.DefaultClient.Do(req)
+	// actual ERRORS with a request or connectivity
 	if err != nil {
-		// actual ERRORS with a request or connectivity
-		return "", false, fmt.Errorf("error sending a request to %s: %s", req.URL, err)
+		fmt.Printf("error sending a request to %s: %s\n", req.URL, err)
+		return models.SongToDownload{}, ErrorSendingRequest
 	}
 
-	if response.StatusCode >= 400 {
-		// bad request formatting or too many requests
-		return "", false, fmt.Errorf("%d %s when sending a request to %s", response.StatusCode, response.Status, req.URL)
+	// no spotify song with such id exists
+	if response.StatusCode == 404 {
+		return models.SongToDownload{}, NoSongWithSuchId
 	}
 
 	body := OdesliiResponse{}
 	json.NewDecoder(response.Body).Decode(&body)
 
 	youtubeLink := body.LinksByPlatform.Youtube.Url
-	if len(youtubeLink) > 0 {
-		// there is a link, so here's a link
-		return youtubeLink, true, nil
-	} else {
-		// there's no link
-		return youtubeLink, false, nil
+	// this song couldn't be found on YouTube
+	if len(youtubeLink) == 0 {
+		return models.SongToDownload{}, NoYoutubeLinkForSong
+
 	}
+	// actually found a song
+	return models.SongToDownload{
+			SpotifyId:   spotifyId,
+			YoutubeLink: youtubeLink,
+		},
+		Found
 }
