@@ -17,7 +17,9 @@ import (
 )
 
 var (
-	appConfig AppConfig
+	appConfig                 AppConfig
+	featureYoutubeDlInstalled bool
+	featureFfmpegInstalled    bool
 )
 
 type AppConfig struct {
@@ -46,6 +48,21 @@ func configureApp() {
 	appConfig = AppConfig{
 		ClientId:     getEnvOrDefault("CLIENT_ID", "00000000000000000000000000000000"),
 		ClientSecret: getEnvOrDefault("CLIENT_SECRET", "00000000000000000000000000000000"),
+	}
+
+	_, _, err := RunCliCommand("youtube-dl", "--version")
+	if err == nil {
+		featureYoutubeDlInstalled = true
+		fmt.Println("youtube-dl detected")
+	} else {
+		fmt.Println("youtube-dl could not be detected. Downloads will be unavailable")
+	}
+	_, _, err = RunCliCommand("ffmpeg", "-version")
+	if err == nil {
+		featureFfmpegInstalled = true
+		fmt.Println("ffmpeg detected")
+	} else {
+		fmt.Println("ffmpeg could not be detected. Conversion from mp4 will not be available")
 	}
 }
 
@@ -183,6 +200,11 @@ func main() {
 		if r.Method != "POST" {
 			rw.WriteHeader(http.StatusMethodNotAllowed)
 			return
+		}
+
+		if !featureYoutubeDlInstalled {
+			rw.WriteHeader(http.StatusServiceUnavailable)
+			rw.Write([]byte("youtube-dl is not installed, thus downloads are unavailable"))
 		}
 
 		var downloadRequest models.DownloadRequest
