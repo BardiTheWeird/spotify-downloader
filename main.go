@@ -121,7 +121,7 @@ func main() {
 	spotify.Authenticate(appConfig.GetB64())
 
 	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		rw.Write([]byte("there might be a list of all the endpoints here sometime in the future"))
+		rw.Write([]byte("there might be a frontend here sometime in the future"))
 	})
 
 	// /playlist?id={spotify_playlist_id}
@@ -178,15 +178,27 @@ func main() {
 		case odeslii.ErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
 		case odeslii.NoSongWithSuchId:
-			rw.WriteHeader(http.StatusNotFound)
-			rw.Write(models.CreateErrorPayload(400, fmt.Sprintf("No entry for song with id %s", id)))
+			WriteJsonResponse(rw,
+				http.StatusNotFound,
+				models.CreateErrorPayload(
+					404,
+					fmt.Sprintf("No entry for song with id %s", id),
+				),
+			)
 		case odeslii.NoYoutubeLinkForSong:
-			rw.WriteHeader(http.StatusNotFound)
-			rw.Write(models.CreateErrorPayload(404, fmt.Sprintf("No YouTube link for song with id %s", id)))
+			WriteJsonResponse(rw,
+				http.StatusNotFound,
+				models.CreateErrorPayload(
+					404,
+					fmt.Sprintf("No YouTube link for song with id %s", id),
+				),
+			)
 		case odeslii.Found:
-			rw.WriteHeader(http.StatusOK)
 			bytes, _ := json.Marshal(songToDownload)
-			rw.Write(bytes)
+			WriteJsonResponse(rw,
+				http.StatusOK,
+				bytes,
+			)
 		}
 	})
 
@@ -229,19 +241,23 @@ func main() {
 
 		switch status {
 		case downloader.ErrorCreatingFile:
-			rw.WriteHeader(http.StatusBadRequest)
-			SetContentTypeToJson(rw)
-			rw.Write(models.CreateErrorPayload(
-				403,
-				fmt.Sprint("could not create a file at", filepath)))
+			WriteJsonResponse(rw,
+				http.StatusBadRequest,
+				models.CreateErrorPayload(
+					403,
+					"could not create a file at "+filepath,
+				),
+			)
 		case downloader.ErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
 		case downloader.ErrorReadingContentLength:
-			rw.WriteHeader(http.StatusBadRequest)
-			SetContentTypeToJson(rw)
-			rw.Write(models.CreateErrorPayload(
-				400,
-				"error reading content-length at the download link"))
+			WriteJsonResponse(rw,
+				http.StatusBadRequest,
+				models.CreateErrorPayload(
+					400,
+					"error reading content-length at the download link",
+				),
+			)
 		case downloader.StartedDownloading:
 			rw.WriteHeader(http.StatusOK)
 		}
@@ -265,15 +281,11 @@ func main() {
 		case downloader.GetDownloadStatusGetDownloadedError:
 			rw.WriteHeader(http.StatusInternalServerError)
 		case downloader.GetDownloadStatusOk:
-			bytes, err := json.Marshal(downloadEntry)
-			if err != nil {
-				rw.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			rw.WriteHeader(http.StatusOK)
-			SetContentTypeToJson(rw)
-			rw.Write(bytes)
+			bytes, _ := json.Marshal(downloadEntry)
+			WriteJsonResponse(rw,
+				http.StatusOK,
+				bytes,
+			)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
