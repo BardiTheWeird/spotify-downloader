@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"spotify-downloader/src/models"
-	"spotify-downloader/src/odeslii"
-	"spotify-downloader/src/spotify"
+	"spotify-downloader/models"
+	"spotify-downloader/odeslii"
+	"spotify-downloader/spotify"
 )
 
 var (

@@ -1,6 +1,6 @@
 package models
 
-import "spotify-downloader/src/spotify"
+import "spotify-downloader/spotify"
 
 type Track struct {
 	Id      string   `json:"id"`
