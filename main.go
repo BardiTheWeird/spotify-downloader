@@ -190,6 +190,7 @@ func main() {
 		}
 	})
 
+	// /start-download?path={host_path}&link={youtube_link}
 	// 400 + error payload
 	//     400 => error decoding body
 	//     403 => error creating a file
@@ -207,48 +208,23 @@ func main() {
 			rw.Write([]byte("youtube-dl is not installed, thus downloads are unavailable"))
 		}
 
-		var downloadRequest models.DownloadRequest
-		err := json.NewDecoder(r.Body).Decode(&downloadRequest)
-		if err != nil {
-			rw.WriteHeader(http.StatusBadRequest)
-			SetContentTypeToJson(rw)
-			rw.Write(models.CreateErrorPayload(400, "error decoding the body"))
+		filepath, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		if !ok {
+			return
+		}
+		youtubeLink, ok := GetQueryParameterOrWriteErrorResponse("link", rw, r)
+		if !ok {
 			return
 		}
 
-		if len(downloadRequest.Filepath) == 0 {
-			WriteJsonResponse(
-				rw,
-				http.StatusBadRequest,
-				models.CreateErrorPayload(
-					400,
-					"filepath is empty",
-				),
-			)
-			return
-		}
-
-		if len(downloadRequest.YoutubeLink) == 0 {
-			WriteJsonResponse(
-				rw,
-				http.StatusBadRequest,
-				models.CreateErrorPayload(
-					400,
-					"youtube_link is empty",
-				),
-			)
-			return
-		}
-
-		// get the download link with the power of youtube-dl
-		downloadLink, exists := GetYoutubeDownloadLink(downloadRequest.YoutubeLink)
+		downloadLink, exists := GetYoutubeDownloadLink(youtubeLink)
 		if !exists {
 			rw.WriteHeader(http.StatusNotFound)
 			return
 		}
 
 		status := downloader.StartDownload(
-			downloadRequest.Filepath,
+			filepath,
 			downloadLink)
 
 		switch status {
@@ -257,7 +233,7 @@ func main() {
 			SetContentTypeToJson(rw)
 			rw.Write(models.CreateErrorPayload(
 				403,
-				fmt.Sprint("could not create a file at", downloadRequest.Filepath)))
+				fmt.Sprint("could not create a file at", filepath)))
 		case downloader.ErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
 		case downloader.ErrorReadingContentLength:
