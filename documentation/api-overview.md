@@ -63,7 +63,7 @@ enum DownloadStatus = {
 }
 ```
 # Endpoints
-Everything starts with /api/v1/ (lol, it’s still a to-do)
+Everything starts with /api/v1
 - `GET /playlist?id={spotify_playlist_id}`
 	- Returns a Playlist entity for a specified Spotify Id
 	- Status codes:

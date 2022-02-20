@@ -3,6 +3,7 @@ package spotify
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -71,6 +72,9 @@ func GetPlaylistById(id string) (Playlist, GetPlaylistResposeStatus) {
 		return playlist, Ok
 	default:
 		fmt.Printf("Response status %d was not expected\n", response.StatusCode)
+
+		payload, _ := ioutil.ReadAll(response.Body)
+		fmt.Println("payload:", string(payload))
 		return Playlist{}, UnexpectedResponseStatus
 	}
 }
