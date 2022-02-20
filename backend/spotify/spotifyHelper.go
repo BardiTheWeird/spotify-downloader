@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,9 +9,16 @@ import (
 	"spotify-downloader/models"
 )
 
-var tokenString string
+type SpotifyHelper struct {
+	ClientId     string
+	ClientSecret string
 
-func Authenticate(credentialsB64 string) {
+	TokenString string
+}
+
+func (s *SpotifyHelper) Authenticate() {
+	credentialsB64 := base64.RawStdEncoding.Strict().
+		EncodeToString([]byte(s.ClientId + ":" + s.ClientSecret))
 	req, _ := http.NewRequest("POST", "https://accounts.spotify.com/api/token?grant_type=client_credentials", nil)
 	req.Header.Add("Authorization", "Basic "+credentialsB64)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -33,13 +41,13 @@ func Authenticate(credentialsB64 string) {
 		return
 	}
 
-	tokenString = token.TokenType + " " + token.AccessToken
+	s.TokenString = token.TokenType + " " + token.AccessToken
 }
 
-type GetPlaylistResposeStatus int
+type GetPlaylistResponseStatus int
 
 const (
-	Ok GetPlaylistResposeStatus = iota
+	Ok GetPlaylistResponseStatus = iota
 	ErrorSendingRequest
 	BadOrExpiredToken
 	BadOAuth
@@ -48,9 +56,9 @@ const (
 	UnexpectedResponseStatus
 )
 
-func GetPlaylistById(id string) (models.Playlist, GetPlaylistResposeStatus) {
+func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylistResponseStatus) {
 	req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/playlists/"+id, nil)
-	req.Header.Add("Authorization", tokenString)
+	req.Header.Add("Authorization", s.TokenString)
 	req.Header.Add("Content-Type", "application/json")
 
 	response, err := http.DefaultClient.Do(req)

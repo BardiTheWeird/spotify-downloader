@@ -1,18 +1,17 @@
 package server
 
 import (
-	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
 	cliHelpers "spotify-downloader/cliHelpers"
+	"spotify-downloader/spotify"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type Server struct {
-	SpotifyClientId     string
-	SpotifyClientSecret string
+	SpotifyHelper spotify.SpotifyHelper
 
 	FeatureYoutubeDlInstalled bool
 	FeatureFfmpegInstalled    bool
@@ -22,11 +21,6 @@ type Server struct {
 
 func (s *Server) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(rw, r)
-}
-
-func (s *Server) GetB64() string {
-	return base64.RawStdEncoding.Strict().
-		EncodeToString([]byte(s.SpotifyClientId + ":" + s.SpotifyClientSecret))
 }
 
 func (s *Server) ConfigureFromEnv() {
@@ -39,8 +33,8 @@ func (s *Server) ConfigureFromEnv() {
 		return val
 	}
 
-	s.SpotifyClientId = getEnvOrDefault("CLIENT_ID", "00000000000000000000000000000000")
-	s.SpotifyClientSecret = getEnvOrDefault("CLIENT_SECRET", "00000000000000000000000000000000")
+	s.SpotifyHelper.ClientId = getEnvOrDefault("CLIENT_ID", "00000000000000000000000000000000")
+	s.SpotifyHelper.ClientSecret = getEnvOrDefault("CLIENT_SECRET", "00000000000000000000000000000000")
 
 	_, _, err := cliHelpers.RunCliCommand("youtube-dl", "--version")
 	if err == nil {
