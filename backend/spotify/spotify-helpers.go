@@ -54,7 +54,7 @@ func GetPlaylistById(id string) (Playlist, GetPlaylistResposeStatus) {
 	}
 
 	switch response.StatusCode {
-	case 401:
+	case 400, 401:
 		return Playlist{}, BadOrExpiredToken
 	case 403:
 		return Playlist{}, BadOAuth
