@@ -124,13 +124,6 @@ func main() {
 		rw.Write([]byte("there might be a frontend here sometime in the future"))
 	})
 
-	// /playlist?id={spotify_playlist_id}
-	// 200 + playlist payload
-	// 400 => "id" is empty
-	// 401 => not authorized (maybe?)
-	// 404 => no playlist with such id
-	// 429 => too many requests
-	// 500
 	http.HandleFunc("/playlist", func(rw http.ResponseWriter, r *http.Request) {
 		id, ok := GetQueryParameterOrWriteErrorResponse("id", rw, r)
 		if !ok {
@@ -158,13 +151,6 @@ func main() {
 		}
 	})
 
-	// /s2y?id={spotify_song_id}
-	// 200 + songToDownload payload
-	// 400 => 'id' is empty
-	// 404 => (no such id / no yt link) + error payload:
-	//     400 => no entry for song with {id}
-	//     404 => no YouTube link for song with {id}
-	// 500
 	http.HandleFunc("/s2y", func(rw http.ResponseWriter, r *http.Request) {
 		SetContentTypeToJson(rw)
 		id, ok := GetQueryParameterOrWriteErrorResponse("id", rw, r)
@@ -172,7 +158,7 @@ func main() {
 			return
 		}
 
-		songToDownload, statusCode := odeslii.GetYoutubeLinkBySpotifyId(id)
+		downloadLink, statusCode := odeslii.GetYoutubeLinkBySpotifyId(id)
 
 		switch statusCode {
 		case odeslii.ErrorSendingRequest:
@@ -194,7 +180,7 @@ func main() {
 				),
 			)
 		case odeslii.Found:
-			bytes, _ := json.Marshal(songToDownload)
+			bytes, _ := json.Marshal(downloadLink)
 			WriteJsonResponse(rw,
 				http.StatusOK,
 				bytes,
@@ -202,14 +188,6 @@ func main() {
 		}
 	})
 
-	// /start-download?path={host_path}&link={youtube_link}
-	// 204
-	// 400 + error payload
-	//     400 => error decoding body
-	//     403 => error creating a file
-	// 404 => youtube-dl couldn't find a download link
-	// 405 => only allows POST
-	// 500 => youtube-dl execution error
 	http.HandleFunc("/start-download", func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			rw.WriteHeader(http.StatusMethodNotAllowed)
@@ -264,11 +242,6 @@ func main() {
 		}
 	})
 
-	// /download-status?path={host_path}
-	// 200
-	// 400 + payload error => path not provided
-	// 404 => no downloads at path
-	// 500 => can't stat file OR unhandled GetDownloadStatusStatus
 	http.HandleFunc("/download-status", func(rw http.ResponseWriter, r *http.Request) {
 		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
@@ -292,13 +265,6 @@ func main() {
 		}
 	})
 
-	// /cancel-download?path={host_path}
-	// 204
-	// 400 + payload error => path not provided
-	// 404 => no download at path
-	// 405 => used method other than POST
-	// 409 => not in progress
-	// 500 => cancellation status not handled by the server
 	http.HandleFunc("/cancel-download", func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			rw.WriteHeader(http.StatusMethodNotAllowed)

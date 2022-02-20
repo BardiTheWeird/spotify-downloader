@@ -30,7 +30,7 @@ const (
 	NoYoutubeLinkForSong
 )
 
-func GetYoutubeLinkBySpotifyId(spotifyId string) (models.SongToDownload, QueryResponseStatus) {
+func GetYoutubeLinkBySpotifyId(spotifyId string) (models.DownloadLink, QueryResponseStatus) {
 	req, _ := http.NewRequest("GET", endpoint, nil)
 	query := req.URL.Query()
 	query.Add("platform", "spotify")
@@ -42,12 +42,12 @@ func GetYoutubeLinkBySpotifyId(spotifyId string) (models.SongToDownload, QueryRe
 	// actual ERRORS with a request or connectivity
 	if err != nil {
 		fmt.Printf("error sending a request to %s: %s\n", req.URL, err)
-		return models.SongToDownload{}, ErrorSendingRequest
+		return models.DownloadLink{}, ErrorSendingRequest
 	}
 
 	// no spotify song with such id exists
 	if response.StatusCode == 404 {
-		return models.SongToDownload{}, NoSongWithSuchId
+		return models.DownloadLink{}, NoSongWithSuchId
 	}
 
 	body := OdesliiResponse{}
@@ -56,13 +56,13 @@ func GetYoutubeLinkBySpotifyId(spotifyId string) (models.SongToDownload, QueryRe
 	youtubeLink := body.LinksByPlatform.Youtube.Url
 	// this song couldn't be found on YouTube
 	if len(youtubeLink) == 0 {
-		return models.SongToDownload{}, NoYoutubeLinkForSong
+		return models.DownloadLink{}, NoYoutubeLinkForSong
 
 	}
 	// actually found a song
-	return models.SongToDownload{
-			SpotifyId:   spotifyId,
-			YoutubeLink: youtubeLink,
+	return models.DownloadLink{
+			SpotifyId: spotifyId,
+			Link:      youtubeLink,
 		},
 		Found
 }
