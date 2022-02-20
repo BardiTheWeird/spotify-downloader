@@ -203,6 +203,7 @@ func main() {
 	})
 
 	// /start-download?path={host_path}&link={youtube_link}
+	// 204
 	// 400 + error payload
 	//     400 => error decoding body
 	//     403 => error creating a file
@@ -259,11 +260,11 @@ func main() {
 				),
 			)
 		case downloader.StartedDownloading:
-			rw.WriteHeader(http.StatusOK)
+			rw.WriteHeader(http.StatusNoContent)
 		}
 	})
 
-	// /download-status?path={path}
+	// /download-status?path={host_path}
 	// 200
 	// 400 + payload error => path not provided
 	// 404 => no downloads at path
@@ -286,6 +287,36 @@ func main() {
 				http.StatusOK,
 				bytes,
 			)
+		default:
+			rw.WriteHeader(http.StatusInternalServerError)
+		}
+	})
+
+	// /cancel-download?path={host_path}
+	// 204
+	// 400 + payload error => path not provided
+	// 404 => no download at path
+	// 405 => used method other than POST
+	// 409 => not in progress
+	// 500 => cancellation status not handled by the server
+	http.HandleFunc("/cancel-download", func(rw http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			rw.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		if !ok {
+			return
+		}
+
+		switch status := downloader.CancelDownload(path); status {
+		case downloader.CancelDownloadStatusNotFound:
+			rw.WriteHeader(http.StatusNotFound)
+		case downloader.CancelDownloadStatusNotInProgress:
+			rw.WriteHeader(http.StatusConflict)
+		case downloader.CancelDownloadStatusOk:
+			rw.WriteHeader(http.StatusNoContent)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}

@@ -1,21 +1,40 @@
 package downloader
 
 import (
-	"bytes"
+	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
-	"path"
 	"spotify-downloader/models"
 	"strconv"
 	"sync"
-	"time"
 )
 
 // filepath -> models.DownloadEntry
 var DownloadEntries sync.Map
+
+type CancelDownloadStatus int
+
+const (
+	CancelDownloadStatusOk CancelDownloadStatus = iota
+	CancelDownloadStatusNotFound
+	CancelDownloadStatusNotInProgress
+)
+
+func CancelDownload(path string) CancelDownloadStatus {
+	entry, ok := DownloadEntries.Load(path)
+	if !ok {
+		return CancelDownloadStatusNotFound
+	}
+	switch entry := entry.(models.DownloadEntry); entry.Status {
+	case models.DownloadInProgress:
+		entry.CancellationFunc()
+		return CancelDownloadStatusOk
+	default:
+		return CancelDownloadStatusNotInProgress
+	}
+}
 
 type GetDownloadStatusStatus int
 
@@ -71,37 +90,10 @@ func getDownloadedBytes(path string) (int64, getDownloadedBytesResponseStatus) {
 	return fi.Size(), getDownloadedOk
 }
 
-func PrintDownloadPercent(done chan int64, path string, total int64) {
+type readerWithCancellationFunc func(p []byte) (n int, err error)
 
-	var stop bool = false
-
-	for {
-		select {
-		case <-done:
-			stop = true
-		default:
-
-			size, status := getDownloadedBytes(path)
-			if status == getDownloadedCantOpenFile || status == getDownloadedCantStatFile {
-				log.Fatal()
-			}
-
-			if size == 0 {
-				size = 1
-			}
-
-			var percent float64 = float64(size) / float64(total) * 100
-
-			fmt.Printf("%.0f", percent)
-			fmt.Println("%")
-		}
-
-		if stop {
-			break
-		}
-
-		time.Sleep(time.Second)
-	}
+func (rf readerWithCancellationFunc) Read(p []byte) (n int, err error) {
+	return rf(p)
 }
 
 type DownloadStartStatus int
@@ -117,127 +109,90 @@ func StartDownload(downloadPath, url string) DownloadStartStatus {
 	ch := make(chan DownloadStartStatus)
 
 	go func() {
-		out, err := os.Create(downloadPath)
-		if err != nil {
-			ch <- ErrorCreatingFile
-			return
-		}
-		defer out.Close()
-
-		headResp, err := http.Head(url)
-		if err != nil {
-			ch <- ErrorSendingRequest
-			return
-		}
-		defer headResp.Body.Close()
-
-		size, err := strconv.Atoi(headResp.Header.Get("Content-Length"))
-		if err != nil {
-			ch <- ErrorReadingContentLength
-			return
-		}
-
-		fmt.Println("content length:", size)
-
-		resp, err := http.Get(url)
-		if err != nil {
-			ch <- ErrorSendingRequest
-			return
-		}
-		defer resp.Body.Close()
-
-		ch <- StartedDownloading
-
-		DownloadEntries.Store(
-			downloadPath,
-			models.DownloadEntry{
-				Filepath:    downloadPath,
-				YoutubeLink: url,
-				TotalBytes:  size,
-				Status:      models.DownloadInProgress,
-			},
-		)
-
-		n, err := io.Copy(out, resp.Body)
-		fmt.Println("finished copying. n:", n, "err:", err)
-
-		entryInterface, ok := DownloadEntries.Load(downloadPath)
-		if !ok {
-			entryInterface = models.DownloadEntry{
-				Filepath:    downloadPath,
-				YoutubeLink: url,
-				TotalBytes:  size,
+		cancelled := false
+		func() {
+			out, err := os.Create(downloadPath)
+			if err != nil {
+				ch <- ErrorCreatingFile
+				return
 			}
+			defer out.Close()
+
+			headResp, err := http.Head(url)
+			if err != nil {
+				ch <- ErrorSendingRequest
+				return
+			}
+			defer headResp.Body.Close()
+
+			size, err := strconv.Atoi(headResp.Header.Get("Content-Length"))
+			if err != nil {
+				ch <- ErrorReadingContentLength
+				return
+			}
+
+			resp, err := http.Get(url)
+			if err != nil {
+				ch <- ErrorSendingRequest
+				return
+			}
+			defer resp.Body.Close()
+
+			fmt.Println("download at", downloadPath, "started")
+			ch <- StartedDownloading
+
+			ctx, fn := context.WithCancel(context.Background())
+
+			DownloadEntries.Store(
+				downloadPath,
+				models.DownloadEntry{
+					Filepath:         downloadPath,
+					YoutubeLink:      url,
+					TotalBytes:       size,
+					Status:           models.DownloadInProgress,
+					CancellationFunc: fn,
+				},
+			)
+
+			_, err = io.Copy(out, readerWithCancellationFunc(func(p []byte) (n int, err error) {
+				select {
+				case <-ctx.Done():
+					cancelled = true
+					return 0, io.EOF
+				default:
+					return resp.Body.Read(p)
+				}
+			}))
+
+			entryInterface, ok := DownloadEntries.Load(downloadPath)
+			if !ok {
+				entryInterface = models.DownloadEntry{
+					Filepath:    downloadPath,
+					YoutubeLink: url,
+					TotalBytes:  size,
+				}
+			}
+
+			downloadEntry := entryInterface.(models.DownloadEntry)
+			switch {
+			case cancelled:
+				fmt.Println("download at", downloadPath, "was cancelled")
+				downloadEntry.Status = models.DownloadedCancelled
+			case err != nil:
+				fmt.Println("download at", downloadPath, "failed:", err)
+				downloadEntry.Status = models.DownloadFailed
+			default:
+				fmt.Println("finished downloading at", downloadPath)
+				downloadEntry.Status = models.DownloadFinished
+			}
+
+			DownloadEntries.Store(downloadPath, downloadEntry)
+		}()
+
+		if cancelled {
+			os.Remove(downloadPath)
 		}
-
-		downloadEntry := entryInterface.(models.DownloadEntry)
-
-		if err != nil {
-			downloadEntry.Status = models.DownloadFailed
-		} else {
-			downloadEntry.Status = models.DownloadFinished
-		}
-
-		DownloadEntries.Store(downloadPath, downloadEntry)
 	}()
 
 	return <-ch
-}
-
-func DownloadFile(url, downloadPath string) {
-
-	file := path.Base(url)
-
-	log.Printf("Downloading file %s from %s\n", file, url)
-
-	var path bytes.Buffer
-	path.WriteString(downloadPath)
-
-	start := time.Now()
-
-	out, err := os.Create(path.String())
-
-	if err != nil {
-		fmt.Println(path.String())
-		panic(err)
-	}
-
-	defer out.Close()
-
-	headResp, err := http.Head(url)
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer headResp.Body.Close()
-
-	size, err := strconv.Atoi(headResp.Header.Get("Content-Length"))
-
-	if err != nil {
-		panic(err)
-	}
-
-	done := make(chan int64)
-
-	go PrintDownloadPercent(done, path.String(), int64(size))
-
-	resp, err := http.Get(url)
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	n, err := io.Copy(out, resp.Body)
-
-	if err != nil {
-		panic(err)
-	}
-
-	done <- n
-
-	elapsed := time.Since(start)
-	log.Printf("Download completed in %s", elapsed)
 }
