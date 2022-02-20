@@ -82,7 +82,7 @@ Everything starts with /api/v1/ (lol, it’s still a to-do)
 			- 400 => no entry for song with {id}
 			- 404 => no YouTube link for song with {id}
 		- 500
-- `POST /start-download?path={host_path}&link={youtube_link}`
+- `POST /download/start?path={host_path}&link={youtube_link}`
 	- Starts a download on a host machine
 	- Status codes:
 		- 204
@@ -92,14 +92,14 @@ Everything starts with /api/v1/ (lol, it’s still a to-do)
 		- 404 => youtube-dl couldn't find a download link
 		- 405 => used method other than POST
 		- 500 => youtube-dl execution error
-- `GET /download-status?path={host_path}`
+- `GET /download/status?path={host_path}`
 	- Returns a DownloadEntry of download at {path}
 	- Status codes:
 		- 200
 		- 400 + payload error => path not provided
 		- 404 => no download at {path}
 		- 500 => can't stat file OR unhandled GetDownloadStatusStatus
-- `POST /cancel-download?path={host_path}`
+- `POST /download/cancel?path={host_path}`
 	- Cancels a download at {path}
 	- Status codes:
 		- 204

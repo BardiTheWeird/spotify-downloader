@@ -188,7 +188,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/start-download", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/download/start", func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			rw.WriteHeader(http.StatusMethodNotAllowed)
 			return
@@ -242,7 +242,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/download-status", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/download/status", func(rw http.ResponseWriter, r *http.Request) {
 		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
 			return
@@ -265,7 +265,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/cancel-download", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/download/cancel", func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			rw.WriteHeader(http.StatusMethodNotAllowed)
 			return
