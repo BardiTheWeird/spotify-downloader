@@ -19,10 +19,10 @@ func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		spotifyPlaylist, status := spotify.GetPlaylistById(id)
+		playlist, status := spotify.GetPlaylistById(id)
 		if status == spotify.BadOrExpiredToken {
 			spotify.Authenticate(s.GetB64())
-			spotifyPlaylist, status = spotify.GetPlaylistById(id)
+			playlist, status = spotify.GetPlaylistById(id)
 		}
 
 		switch status {
@@ -35,7 +35,6 @@ func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 		case spotify.NotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case spotify.Ok:
-			playlist := models.FromSpotifyPlaylist(spotifyPlaylist)
 			bytes, _ := json.Marshal(playlist)
 			WriteJsonResponse(rw, http.StatusOK, bytes)
 		}

@@ -1,126 +1,104 @@
 package spotify
 
-import "fmt"
+import "spotify-downloader/models"
 
-type ClientToken struct {
-	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
-	ExpiresIn   int    `json:"expires_in"`
-}
-
-type Followers_Type struct {
-	Total int
-}
-
-type Image struct {
-	Url string
-}
-
-type Owner_Type struct {
-	Display_name  string
-	External_urls map[string]string
-	Href          string
-	Id            string
-	Type          string
-	Uri           string
-}
-
-type AddedBy_Type struct {
-	External_urls map[string]string
-	Href          string
-	Id            string
-	Type          string
-	Uri           string
-}
-
-type Artist struct {
-	External_urls map[string]string
-	Href          string
-	Id            string
-	Name          string
-	Type          string
-	Uri           string
-}
-
-type Album_Type_Go struct {
-	Artists []Artist
-	Href    string
-	Id      string
-	Images  []Image
-	Name    string
-}
-
-type Track_Type struct {
-	Album        Album_Type_Go
-	Artists      []Artist
-	Duration_ms  int
-	Href         string
-	Id           string
-	Name         string
-	Preview_url  string
-	Track_number int
-}
-
-func (t Track_Type) Print() {
-	fmt.Print("Artists: ")
-	for _, v := range t.Artists {
-		fmt.Print(v.Name)
+type playlist struct {
+	Id    string
+	Name  string
+	Href  string
+	Owner struct {
+		Id           string
+		Display_name string
+		Href         string
 	}
-	fmt.Println()
+	Images []struct {
+		Url string
+	}
+	Tracks struct {
+		Items []struct {
+			Added_at string
+			Is_local bool
+			Track    struct {
+				Id      string
+				Name    string
+				Artists []struct {
+					Name string
+				}
 
-	fmt.Printf("Id: %s\n", t.Id)
-	fmt.Printf("Album: %s\n", t.Album.Name)
-	fmt.Printf("Duration (ms): %d\n", t.Duration_ms)
-	fmt.Printf("Href: %s\n", t.Href)
-	fmt.Printf("Track_number: %d\n", t.Track_number)
+				Album struct {
+					Name   string
+					Images []struct {
+						Url string
+					}
+					Href string
+				}
+
+				Href        string
+				Preview_url string
+			}
+		}
+	}
 }
 
-type TrackEntry struct {
-	Added_at        string
-	Added_by        AddedBy_Type
-	Is_local        bool
-	Track           Track_Type
-	Video_thumbnail map[string]string
-}
+func (p *playlist) toModelsPlaylist() models.Playlist {
+	type Track = struct {
+		Id      string   `json:"id"`
+		Title   string   `json:"title"`
+		Artists []string `json:"artists"`
 
-func (t TrackEntry) Print() {
-	t.Track.Print()
-}
+		AlbumTitle string `json:"album_title"`
+		AlbumImage string `json:"album_image"`
+		AlbumHref  string `json:"album_href"`
 
-type Tracks_Type struct {
-	Href     string
-	Items    []TrackEntry
-	Limit    int
-	Next     string
-	Offset   int
-	Previous string
-	Total    int
-}
+		Href       string `json:"href"`
+		PreviewUrl string `json:"preview_url"`
+	}
 
-type Playlist struct {
-	Id          string
-	Name        string
-	Description string
-	Type        string
-	Owner       Owner_Type
-	Href        string
-	Images      []Image
-	Tracks      Tracks_Type
-}
+	owner := struct {
+		Id          string `json:"id"`
+		DisplayName string `json:"display_name"`
+		Href        string `json:"href"`
+	}{
+		Id:          p.Owner.Id,
+		DisplayName: p.Owner.Display_name,
+		Href:        p.Owner.Href,
+	}
 
-func (p Playlist) Print() {
-	fmt.Println("_Playlist:")
-	fmt.Printf("Id: %s\n", p.Id)
-	fmt.Printf("Name: %s\n", p.Name)
-	fmt.Printf("Description: %s\n", p.Description)
-	fmt.Printf("Owner: %s\n", p.Owner.Display_name)
+	tracks := make([]Track, 0, len(p.Tracks.Items))
+	for _, v := range p.Tracks.Items {
+		t := v.Track
+		artists := make([]string, 0, len(t.Artists))
+		for _, v := range t.Artists {
+			artists = append(artists, v.Name)
+		}
+		albumImage := ""
+		if len(t.Album.Images) > 0 {
+			albumImage = t.Album.Images[0].Url
+		}
+		tracks = append(tracks, Track{
+			Id:      t.Id,
+			Title:   t.Name,
+			Artists: artists,
 
-	fmt.Printf("Href: %s\n", p.Href)
-	fmt.Printf("Images: %v\n", p.Images)
+			AlbumTitle: t.Album.Name,
+			AlbumImage: albumImage,
+			AlbumHref:  t.Album.Href,
 
-	fmt.Println("__Tracks:")
-	for _, track := range p.Tracks.Items {
-		track.Print()
-		fmt.Println("---")
+			Href:       t.Href,
+			PreviewUrl: t.Preview_url,
+		})
+	}
+
+	playlistImage := ""
+	if len(p.Images) > 0 {
+		playlistImage = p.Images[0].Url
+	}
+	return models.Playlist{
+		Id:     p.Id,
+		Name:   p.Name,
+		Owner:  owner,
+		Href:   p.Href,
+		Image:  playlistImage,
+		Tracks: tracks,
 	}
 }
