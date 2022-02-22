@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"spotify-downloader/clihelpers"
+	"spotify-downloader/downloader"
 	"spotify-downloader/songlink"
 	"spotify-downloader/spotify"
 
@@ -14,6 +15,7 @@ import (
 type Server struct {
 	SpotifyHelper  spotify.SpotifyHelper
 	SonglinkHelper songlink.SonglinkHelper
+	downloader.DownloadHelper
 
 	FeatureYoutubeDlInstalled bool
 	FeatureFfmpegInstalled    bool

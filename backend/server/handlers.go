@@ -106,7 +106,7 @@ func (s *Server) handleDownloadStart() func(http.ResponseWriter, *http.Request) 
 			return
 		}
 
-		status := downloader.StartDownload(
+		status := s.DownloadHelper.StartDownload(
 			filepath,
 			downloadLink)
 
@@ -143,12 +143,10 @@ func (s *Server) handleDownloadStatus() func(http.ResponseWriter, *http.Request)
 			return
 		}
 
-		downloadEntry, responseStatus := downloader.GetDownloadStatus(path)
+		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(path)
 		switch responseStatus {
 		case downloader.GetDownloadStatusNotFound:
 			rw.WriteHeader(http.StatusNotFound)
-		case downloader.GetDownloadStatusGetDownloadedError:
-			rw.WriteHeader(http.StatusInternalServerError)
 		case downloader.GetDownloadStatusOk:
 			bytes, _ := json.Marshal(downloadEntry)
 			WriteJsonResponse(rw,
@@ -169,7 +167,7 @@ func (s *Server) handleDownloadCancel() func(http.ResponseWriter, *http.Request)
 			return
 		}
 
-		switch status := downloader.CancelDownload(path); status {
+		switch status := s.DownloadHelper.CancelDownload(path); status {
 		case downloader.CancelDownloadStatusNotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case downloader.CancelDownloadStatusNotInProgress:
