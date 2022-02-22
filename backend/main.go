@@ -14,6 +14,7 @@ func runServer() {
 	srv := server.Server{}
 	srv.ConfigureFromEnv()
 	srv.ConfigureRoutes()
+	srv.DiscoverFeatures()
 
 	srv.SonglinkHelper.SetDefaultEndpoint()
 

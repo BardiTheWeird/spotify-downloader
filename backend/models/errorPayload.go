@@ -3,7 +3,7 @@ package models
 import "encoding/json"
 
 type ErrorPayload struct {
-	StatusCode   int    `json:"status_code"`
+	StatusCode   int    `json:"status_code,omitempty"`
 	ErrorMessage string `json:"error_message"`
 }
 

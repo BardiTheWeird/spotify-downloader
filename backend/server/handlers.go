@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	cliHelpers "spotify-downloader/cliHelpers"
+	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
 	"spotify-downloader/models"
 	"spotify-downloader/songlink"
@@ -84,10 +84,10 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 // "/download/start"
 func (s *Server) handleDownloadStart() func(http.ResponseWriter, *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		if !s.FeatureYoutubeDlInstalled {
-			rw.WriteHeader(http.StatusServiceUnavailable)
-			rw.Write([]byte("youtube-dl is not installed, thus downloads are unavailable"))
-		}
+		// if !s.FeatureYoutubeDlInstalled {
+		// 	rw.WriteHeader(http.StatusServiceUnavailable)
+		// 	rw.Write([]byte("youtube-dl is not installed, thus downloads are unavailable"))
+		// }
 
 		filepath, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
@@ -98,7 +98,7 @@ func (s *Server) handleDownloadStart() func(http.ResponseWriter, *http.Request) 
 			return
 		}
 
-		downloadLink, exists := cliHelpers.GetYoutubeDownloadLink(youtubeLink)
+		downloadLink, exists := clihelpers.GetYoutubeDownloadLink(youtubeLink)
 		if !exists {
 			rw.WriteHeader(http.StatusNotFound)
 			return

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	cliHelpers "spotify-downloader/cliHelpers"
+	"spotify-downloader/clihelpers"
 	"spotify-downloader/songlink"
 	"spotify-downloader/spotify"
 
@@ -37,15 +37,17 @@ func (s *Server) ConfigureFromEnv() {
 
 	s.SpotifyHelper.ClientId = getEnvOrDefault("CLIENT_ID", "00000000000000000000000000000000")
 	s.SpotifyHelper.ClientSecret = getEnvOrDefault("CLIENT_SECRET", "00000000000000000000000000000000")
+}
 
-	_, _, err := cliHelpers.RunCliCommand("youtube-dl", "--version")
+func (s *Server) DiscoverFeatures() {
+	_, _, err := clihelpers.RunCliCommand("youtube-dl", "--version")
 	if err == nil {
 		s.FeatureYoutubeDlInstalled = true
 		fmt.Println("youtube-dl detected")
 	} else {
 		fmt.Println("youtube-dl could not be detected. Downloads will be unavailable")
 	}
-	_, _, err = cliHelpers.RunCliCommand("ffmpeg", "-version")
+	_, _, err = clihelpers.RunCliCommand("ffmpeg", "-version")
 	if err == nil {
 		s.FeatureFfmpegInstalled = true
 		fmt.Println("ffmpeg detected")
