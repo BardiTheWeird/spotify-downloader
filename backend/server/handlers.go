@@ -21,7 +21,7 @@ func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 
 		playlist, status := s.SpotifyHelper.GetPlaylistById(id)
 		if status == spotify.BadOrExpiredToken {
-			s.SpotifyHelper.Authenticate()
+			s.SpotifyHelper.GetClientToken()
 			playlist, status = s.SpotifyHelper.GetPlaylistById(id)
 		}
 

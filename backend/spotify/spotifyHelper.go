@@ -5,18 +5,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"spotify-downloader/models"
+	"time"
 )
 
 type SpotifyHelper struct {
 	ClientId     string
 	ClientSecret string
 
-	TokenString string
+	Token struct {
+		Value     string
+		ExpiresIn time.Duration
+		Timestamp time.Time
+	}
 }
 
-func (s *SpotifyHelper) Authenticate() {
+func (s *SpotifyHelper) UseClientAuthentication(r *http.Request) {
+	if len(s.Token.Value) == 0 ||
+		time.Now().After(s.Token.Timestamp.Add(time.Second*s.Token.ExpiresIn)) {
+
+		s.GetClientToken()
+		log.Println("Spotify authentication token was refreshed")
+	}
+	r.Header.Add("Authorization", s.Token.Value)
+}
+
+func (s *SpotifyHelper) GetClientToken() {
 	credentialsB64 := base64.RawStdEncoding.Strict().
 		EncodeToString([]byte(s.ClientId + ":" + s.ClientSecret))
 	req, _ := http.NewRequest("POST", "https://accounts.spotify.com/api/token?grant_type=client_credentials", nil)
@@ -41,7 +57,9 @@ func (s *SpotifyHelper) Authenticate() {
 		return
 	}
 
-	s.TokenString = token.TokenType + " " + token.AccessToken
+	s.Token.Value = token.TokenType + " " + token.AccessToken
+	s.Token.ExpiresIn = time.Second * time.Duration(token.ExpiresIn)
+	s.Token.Timestamp = time.Now()
 }
 
 type GetPlaylistResponseStatus int
@@ -58,8 +76,9 @@ const (
 
 func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylistResponseStatus) {
 	req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/playlists/"+id, nil)
-	req.Header.Add("Authorization", s.TokenString)
 	req.Header.Add("Content-Type", "application/json")
+	s.UseClientAuthentication(req)
+	http.DefaultClient.Do(req)
 
 	response, err := http.DefaultClient.Do(req)
 	// actual error with a request or connectivity
