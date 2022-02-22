@@ -15,6 +15,8 @@ func runServer() {
 	srv.ConfigureFromEnv()
 	srv.ConfigureRoutes()
 
+	srv.SonglinkHelper.SetDefaultEndpoint()
+
 	log.Println("Starting a server at :8080...")
 	log.Fatal(http.ListenAndServe("localhost:8080", &srv))
 }

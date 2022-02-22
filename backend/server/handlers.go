@@ -7,7 +7,7 @@ import (
 	cliHelpers "spotify-downloader/cliHelpers"
 	"spotify-downloader/downloader"
 	"spotify-downloader/models"
-	"spotify-downloader/odeslii"
+	"spotify-downloader/songlink"
 	"spotify-downloader/spotify"
 )
 
@@ -50,12 +50,12 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		downloadLink, statusCode := odeslii.GetYoutubeLinkBySpotifyId(id)
+		downloadLink, statusCode := s.SonglinkHelper.GetYoutubeLinkBySpotifyId(id)
 
 		switch statusCode {
-		case odeslii.ErrorSendingRequest:
+		case songlink.ErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
-		case odeslii.NoSongWithSuchId:
+		case songlink.NoSongWithSuchId:
 			WriteJsonResponse(rw,
 				http.StatusNotFound,
 				models.CreateErrorPayload(
@@ -63,7 +63,7 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 					fmt.Sprintf("No entry for song with id %s", id),
 				),
 			)
-		case odeslii.NoYoutubeLinkForSong:
+		case songlink.NoYoutubeLinkForSong:
 			WriteJsonResponse(rw,
 				http.StatusNotFound,
 				models.CreateErrorPayload(
@@ -71,7 +71,7 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 					fmt.Sprintf("No YouTube link for song with id %s", id),
 				),
 			)
-		case odeslii.Found:
+		case songlink.Found:
 			bytes, _ := json.Marshal(downloadLink)
 			WriteJsonResponse(rw,
 				http.StatusOK,

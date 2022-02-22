@@ -1,4 +1,4 @@
-package odeslii
+package songlink
 
 import (
 	"encoding/json"
@@ -7,18 +7,12 @@ import (
 	"spotify-downloader/models"
 )
 
-var endpoint string = "https://api.song.link/v1-alpha.1/links"
-
-type YoutubeLinks struct {
-	Url string
+type SonglinkHelper struct {
+	Endpoint string
 }
 
-type LinksByPlatform struct {
-	Youtube YoutubeLinks
-}
-
-type OdesliiResponse struct {
-	LinksByPlatform LinksByPlatform
+func (s *SonglinkHelper) SetDefaultEndpoint() {
+	s.Endpoint = "https://api.song.link/v1-alpha.1/links"
 }
 
 type QueryResponseStatus int
@@ -30,8 +24,16 @@ const (
 	NoYoutubeLinkForSong
 )
 
-func GetYoutubeLinkBySpotifyId(spotifyId string) (models.DownloadLink, QueryResponseStatus) {
-	req, _ := http.NewRequest("GET", endpoint, nil)
+func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (models.DownloadLink, QueryResponseStatus) {
+	type SonglinkResponse struct {
+		LinksByPlatform struct {
+			Youtube struct {
+				Url string
+			}
+		}
+	}
+
+	req, _ := http.NewRequest("GET", s.Endpoint, nil)
 	query := req.URL.Query()
 	query.Add("platform", "spotify")
 	query.Add("type", "song")
@@ -50,7 +52,7 @@ func GetYoutubeLinkBySpotifyId(spotifyId string) (models.DownloadLink, QueryResp
 		return models.DownloadLink{}, NoSongWithSuchId
 	}
 
-	body := OdesliiResponse{}
+	body := SonglinkResponse{}
 	json.NewDecoder(response.Body).Decode(&body)
 
 	youtubeLink := body.LinksByPlatform.Youtube.Url

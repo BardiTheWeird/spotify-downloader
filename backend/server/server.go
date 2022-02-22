@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"os"
 	cliHelpers "spotify-downloader/cliHelpers"
+	"spotify-downloader/songlink"
 	"spotify-downloader/spotify"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type Server struct {
-	SpotifyHelper spotify.SpotifyHelper
+	SpotifyHelper  spotify.SpotifyHelper
+	SonglinkHelper songlink.SonglinkHelper
 
 	FeatureYoutubeDlInstalled bool
 	FeatureFfmpegInstalled    bool
