@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"spotify-downloader/clihelpers"
@@ -29,7 +29,7 @@ func (s *Server) ConfigureFromEnv() {
 	getEnvOrDefault := func(envKey, def string) string {
 		val, err := os.LookupEnv(envKey)
 		if !err {
-			fmt.Printf("%s is not set, using %s\n", envKey, def)
+			log.Printf("%s is not set, using %s\n", envKey, def)
 			val = def
 		}
 		return val
@@ -43,15 +43,15 @@ func (s *Server) DiscoverFeatures() {
 	_, _, err := clihelpers.RunCliCommand("youtube-dl", "--version")
 	if err == nil {
 		s.FeatureYoutubeDlInstalled = true
-		fmt.Println("youtube-dl detected")
+		log.Println("youtube-dl detected")
 	} else {
-		fmt.Println("youtube-dl could not be detected. Downloads will be unavailable")
+		log.Println("youtube-dl could not be detected. Downloads will be unavailable")
 	}
 	_, _, err = clihelpers.RunCliCommand("ffmpeg", "-version")
 	if err == nil {
 		s.FeatureFfmpegInstalled = true
-		fmt.Println("ffmpeg detected")
+		log.Println("ffmpeg detected")
 	} else {
-		fmt.Println("ffmpeg could not be detected. Conversion from mp4 will not be available")
+		log.Println("ffmpeg could not be detected. Conversion from mp4 will not be available")
 	}
 }

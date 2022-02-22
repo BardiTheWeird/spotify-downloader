@@ -3,7 +3,6 @@ package spotify
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -41,7 +40,7 @@ func (s *SpotifyHelper) GetClientToken() {
 
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Printf("Error doing a request %v: %s\n", req, err)
+		log.Printf("Error doing a request %v: %s\n", req, err)
 	}
 	defer response.Body.Close()
 
@@ -53,7 +52,7 @@ func (s *SpotifyHelper) GetClientToken() {
 	}{}
 	err = json.NewDecoder(response.Body).Decode(&token)
 	if err != nil {
-		fmt.Printf("Error decoding client token: %s", err)
+		log.Printf("Error decoding client token: %s", err)
 		return
 	}
 
@@ -83,7 +82,7 @@ func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylist
 	response, err := http.DefaultClient.Do(req)
 	// actual error with a request or connectivity
 	if err != nil {
-		fmt.Printf("error sending a request to %s: %s\n", req.URL, err)
+		log.Printf("error sending a request to %s: %s\n", req.URL, err)
 		return models.Playlist{}, ErrorSendingRequest
 	}
 
@@ -98,17 +97,17 @@ func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylist
 		return models.Playlist{}, ExceededRateLimits
 	case 200:
 		// bytes, _ := ioutil.ReadAll(response.Body)
-		// fmt.Println("Response from Spotify:", string(bytes))
+		// log.Println("Response from Spotify:", string(bytes))
 
 		var playlist playlist
 		// json.Unmarshal(bytes, &playlist)
 		json.NewDecoder(response.Body).Decode(&playlist)
 		return playlist.toModelsPlaylist(), Ok
 	default:
-		fmt.Printf("Response status %d was not expected\n", response.StatusCode)
+		log.Printf("Response status %d was not expected\n", response.StatusCode)
 
 		payload, _ := ioutil.ReadAll(response.Body)
-		fmt.Println("payload:", string(payload))
+		log.Println("payload:", string(payload))
 		return models.Playlist{}, UnexpectedResponseStatus
 	}
 }

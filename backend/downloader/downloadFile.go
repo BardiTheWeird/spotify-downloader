@@ -2,8 +2,8 @@ package downloader
 
 import (
 	"context"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"spotify-downloader/models"
@@ -76,14 +76,14 @@ const (
 func getDownloadedBytes(path string) (int64, getDownloadedBytesResponseStatus) {
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Printf("Error opening file %s: %s", path, err)
+		log.Printf("Error opening file %s: %s", path, err)
 		return 0, getDownloadedCantOpenFile
 	}
 	defer file.Close()
 
 	fi, err := file.Stat()
 	if err != nil {
-		fmt.Printf("Error stating file %s: %s", path, err)
+		log.Printf("Error stating file %s: %s", path, err)
 		return 0, getDownloadedCantOpenFile
 	}
 
@@ -138,7 +138,7 @@ func StartDownload(downloadPath, url string) DownloadStartStatus {
 			}
 			defer resp.Body.Close()
 
-			fmt.Println("download at", downloadPath, "started")
+			log.Println("download at", downloadPath, "started")
 			ch <- StartedDownloading
 
 			ctx, fn := context.WithCancel(context.Background())
@@ -176,13 +176,13 @@ func StartDownload(downloadPath, url string) DownloadStartStatus {
 			downloadEntry := entryInterface.(models.DownloadEntry)
 			switch {
 			case cancelled:
-				fmt.Println("download at", downloadPath, "was cancelled")
+				log.Println("download at", downloadPath, "was cancelled")
 				downloadEntry.Status = models.DownloadedCancelled
 			case err != nil:
-				fmt.Println("download at", downloadPath, "failed:", err)
+				log.Println("download at", downloadPath, "failed:", err)
 				downloadEntry.Status = models.DownloadFailed
 			default:
-				fmt.Println("finished downloading at", downloadPath)
+				log.Println("finished downloading at", downloadPath)
 				downloadEntry.Status = models.DownloadFinished
 			}
 

@@ -2,7 +2,7 @@ package songlink
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"spotify-downloader/models"
 )
@@ -43,7 +43,7 @@ func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (models.Dow
 	response, err := http.DefaultClient.Do(req)
 	// actual ERRORS with a request or connectivity
 	if err != nil {
-		fmt.Printf("error sending a request to %s: %s\n", req.URL, err)
+		log.Printf("error sending a request to %s: %s\n", req.URL, err)
 		return models.DownloadLink{}, ErrorSendingRequest
 	}
 

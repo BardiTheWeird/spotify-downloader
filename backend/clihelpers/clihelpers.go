@@ -2,7 +2,7 @@ package clihelpers
 
 import (
 	"bytes"
-	"fmt"
+	"log"
 	"os/exec"
 	"strings"
 )
@@ -24,7 +24,7 @@ func GetYoutubeDownloadLink(youtubeLink string) (string, bool) {
 	exists := true
 	if err != nil {
 		exists = false
-		fmt.Println("error querying youtube-dl:", err)
+		log.Println("error querying youtube-dl:", err)
 	}
 
 	return strings.TrimSpace(link), exists
