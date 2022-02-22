@@ -81,6 +81,7 @@ Everything starts with /api/v1
 		- 404 => (no such id / no yt link) + error payload:
 			- 400 => no entry for song with {id}
 			- 404 => no YouTube link for song with {id}
+		- 429 => too many requests (actually, the server first throttles to 10 requests per second, but if it overloads songlink in spite of that, it returns 429)
 		- 500
 - `POST /download/start?path={host_path}&link={youtube_link}`
 	- Starts a download on a host machine

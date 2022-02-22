@@ -55,6 +55,8 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 		switch statusCode {
 		case songlink.ErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
+		case songlink.TooManyRequests:
+			rw.WriteHeader(http.StatusTooManyRequests)
 		case songlink.NoSongWithSuchId:
 			WriteJsonResponse(rw,
 				http.StatusNotFound,

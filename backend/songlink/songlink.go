@@ -5,14 +5,18 @@ import (
 	"log"
 	"net/http"
 	"spotify-downloader/models"
+
+	"go.uber.org/ratelimit"
 )
 
 type SonglinkHelper struct {
-	Endpoint string
+	Endpoint  string
+	RateLimit ratelimit.Limiter
 }
 
-func (s *SonglinkHelper) SetDefaultEndpoint() {
+func (s *SonglinkHelper) SetDefaults() {
 	s.Endpoint = "https://api.song.link/v1-alpha.1/links"
+	s.RateLimit = ratelimit.New(10)
 }
 
 type QueryResponseStatus int
@@ -22,9 +26,12 @@ const (
 	ErrorSendingRequest
 	NoSongWithSuchId
 	NoYoutubeLinkForSong
+	TooManyRequests
 )
 
 func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (models.DownloadLink, QueryResponseStatus) {
+	s.RateLimit.Take()
+
 	type SonglinkResponse struct {
 		LinksByPlatform struct {
 			Youtube struct {
@@ -45,6 +52,11 @@ func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (models.Dow
 	if err != nil {
 		log.Printf("error sending a request to %s: %s\n", req.URL, err)
 		return models.DownloadLink{}, ErrorSendingRequest
+	}
+
+	// too many requests
+	if response.StatusCode == 429 {
+		return models.DownloadLink{}, TooManyRequests
 	}
 
 	// no spotify song with such id exists
