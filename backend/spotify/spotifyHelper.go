@@ -21,17 +21,20 @@ type SpotifyHelper struct {
 	}
 }
 
-func (s *SpotifyHelper) UseClientAuthentication(r *http.Request) {
+func (s *SpotifyHelper) UseClientAuthentication(r *http.Request) bool {
 	if len(s.Token.Value) == 0 ||
 		time.Now().After(s.Token.Timestamp.Add(time.Second*s.Token.ExpiresIn)) {
 
-		s.GetClientToken()
+		if !s.UpdateClientToken() {
+			return false
+		}
 		log.Println("Spotify authentication token was refreshed")
 	}
 	r.Header.Add("Authorization", s.Token.Value)
+	return true
 }
 
-func (s *SpotifyHelper) GetClientToken() {
+func (s *SpotifyHelper) UpdateClientToken() bool {
 	credentialsB64 := base64.RawStdEncoding.Strict().
 		EncodeToString([]byte(s.ClientId + ":" + s.ClientSecret))
 	req, _ := http.NewRequest("POST", "https://accounts.spotify.com/api/token?grant_type=client_credentials", nil)
@@ -44,7 +47,10 @@ func (s *SpotifyHelper) GetClientToken() {
 	}
 	defer response.Body.Close()
 
-	// TO DO: check for bad error statuses
+	if response.StatusCode >= 400 {
+		return false
+	}
+
 	token := struct {
 		AccessToken string `json:"access_token"`
 		TokenType   string `json:"token_type"`
@@ -52,13 +58,14 @@ func (s *SpotifyHelper) GetClientToken() {
 	}{}
 	err = json.NewDecoder(response.Body).Decode(&token)
 	if err != nil {
-		log.Printf("Error decoding client token: %s", err)
-		return
+		log.Panicln("Error decoding client token:", err)
 	}
 
 	s.Token.Value = token.TokenType + " " + token.AccessToken
 	s.Token.ExpiresIn = time.Second * time.Duration(token.ExpiresIn)
 	s.Token.Timestamp = time.Now()
+	log.Println("spotify client token refreshed")
+	return true
 }
 
 type GetPlaylistResponseStatus int
@@ -67,6 +74,7 @@ const (
 	Ok GetPlaylistResponseStatus = iota
 	ErrorSendingRequest
 	BadOrExpiredToken
+	BadClientCredentials
 	BadOAuth
 	ExceededRateLimits
 	NotFound
@@ -76,7 +84,9 @@ const (
 func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylistResponseStatus) {
 	req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/playlists/"+id, nil)
 	req.Header.Add("Content-Type", "application/json")
-	s.UseClientAuthentication(req)
+	if !s.UseClientAuthentication(req) {
+		return models.Playlist{}, BadClientCredentials
+	}
 	http.DefaultClient.Do(req)
 
 	response, err := http.DefaultClient.Do(req)

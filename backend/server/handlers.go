@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
@@ -20,10 +21,6 @@ func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 		}
 
 		playlist, status := s.SpotifyHelper.GetPlaylistById(id)
-		if status == spotify.BadOrExpiredToken {
-			s.SpotifyHelper.GetClientToken()
-			playlist, status = s.SpotifyHelper.GetPlaylistById(id)
-		}
 
 		switch status {
 		case spotify.ErrorSendingRequest, spotify.UnexpectedResponseStatus:
@@ -34,6 +31,10 @@ func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 			rw.WriteHeader(http.StatusTooManyRequests)
 		case spotify.NotFound:
 			rw.WriteHeader(http.StatusNotFound)
+		case spotify.BadClientCredentials:
+			WriteJsonResponse(rw,
+				http.StatusHTTPVersionNotSupported,
+				models.CreateErrorPayload(0, "bad spotify client id or key"))
 		case spotify.Ok:
 			bytes, _ := json.Marshal(playlist)
 			WriteJsonResponse(rw, http.StatusOK, bytes)
@@ -177,5 +178,46 @@ func (s *Server) handleDownloadCancel() func(http.ResponseWriter, *http.Request)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
+	}
+}
+
+func (s *Server) handleSpotifyConfigure() func(http.ResponseWriter, *http.Request) {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		configuration := struct {
+			ClientId     string `json:"client_id"`
+			ClientSecret string `json:"client_secret"`
+		}{}
+
+		err := json.NewDecoder(r.Body).Decode(&configuration)
+		if err != nil {
+			log.Panicln("error decoding client configuration")
+		}
+
+		if len(configuration.ClientId) == 0 {
+			WriteJsonResponse(rw, 400,
+				models.CreateErrorPayload(0, "client_id is empty"))
+			return
+		}
+		if len(configuration.ClientSecret) == 0 {
+			WriteJsonResponse(rw, 400,
+				models.CreateErrorPayload(0, "client_secret is empty"))
+			return
+		}
+
+		oldClientId := s.SpotifyHelper.ClientId
+		oldClientSecret := s.SpotifyHelper.ClientSecret
+		s.SpotifyHelper.ClientId = configuration.ClientId
+		s.SpotifyHelper.ClientSecret = configuration.ClientSecret
+
+		if !s.SpotifyHelper.UpdateClientToken() {
+			WriteJsonResponse(rw, 400,
+				models.CreateErrorPayload(401, "can't authenticate using new credentials"))
+
+			s.SpotifyHelper.ClientId = oldClientId
+			s.SpotifyHelper.ClientSecret = oldClientSecret
+			s.SpotifyHelper.UpdateClientToken()
+			return
+		}
+		rw.WriteHeader(http.StatusNoContent)
 	}
 }

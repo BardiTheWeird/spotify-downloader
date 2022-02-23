@@ -64,7 +64,7 @@ enum DownloadStatus = {
 ```
 # Endpoints
 Everything starts with /api/v1
-- `GET /playlist?id={spotify_playlist_id}`
+- `GET /spotify/playlist?id={spotify_playlist_id}`
 	- Returns a Playlist entity for a specified Spotify Id
 	- Status codes:
 		- 200 + playlist payload
@@ -73,6 +73,20 @@ Everything starts with /api/v1
 		- 404 => no playlist with such id
 		- 429 => too many requests
 		- 500
+- `POST /spotify/configure`
+	- Configure Spotify with Client Id and Client Secret
+	- Request Body:
+	```
+	type SpotifyClientConfiguration {
+		client_id: string,
+		client_seret: string
+	}
+	```
+	- Status codes:
+		- 204
+		- 400 + error payload:
+			- 0 => client id or client secret not provided
+			- 400 => bad credentials
 - `GET /s2y?id={spotify_song_id}`
 	- Returns a YouTube link for a given Spotify song Id
 	- Status codes:
