@@ -24,9 +24,7 @@ func GetQueryParameterOrWriteErrorResponse(parameter string, rw http.ResponseWri
 			rw,
 			400,
 			models.CreateErrorPayload(
-				0,
-				fmt.Sprintf("'%s' query parameter is missing", parameter),
-			),
+				fmt.Sprintf("'%s' query parameter is missing", parameter)),
 		)
 		present = false
 	}

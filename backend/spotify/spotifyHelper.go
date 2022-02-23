@@ -106,11 +106,7 @@ func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylist
 	case 429:
 		return models.Playlist{}, ExceededRateLimits
 	case 200:
-		// bytes, _ := ioutil.ReadAll(response.Body)
-		// log.Println("Response from Spotify:", string(bytes))
-
 		var playlist playlist
-		// json.Unmarshal(bytes, &playlist)
 		json.NewDecoder(response.Body).Decode(&playlist)
 		return playlist.toModelsPlaylist(), Ok
 	default:

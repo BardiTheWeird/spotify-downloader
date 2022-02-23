@@ -7,11 +7,15 @@ type ErrorPayload struct {
 	ErrorMessage string `json:"error_message"`
 }
 
-func CreateErrorPayload(statusCode int, errorMessage string) []byte {
+func CreateErrorPayloadWithCode(statusCode int, errorMessage string) []byte {
 	response := ErrorPayload{
 		StatusCode:   statusCode,
 		ErrorMessage: errorMessage,
 	}
 	bytes, _ := json.Marshal(response)
 	return bytes
+}
+
+func CreateErrorPayload(errorMessage string) []byte {
+	return CreateErrorPayloadWithCode(0, errorMessage)
 }

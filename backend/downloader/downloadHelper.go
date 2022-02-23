@@ -18,10 +18,10 @@ type DownloadHelper struct {
 type DownloadStartStatus int
 
 const (
-	StartedDownloading DownloadStartStatus = iota
-	ErrorCreatingFile
-	ErrorSendingRequest
-	ErrorReadingContentLength
+	DStartOk DownloadStartStatus = iota
+	DStartErrorCreatingFile
+	DStartErrorSendingRequest
+	DStartErrorReadingContentLength
 )
 
 type readerWithCancellationFunc func(p []byte) (n int, err error)
@@ -38,33 +38,33 @@ func (d *DownloadHelper) StartDownload(downloadPath, url string) DownloadStartSt
 		func() {
 			out, err := os.Create(downloadPath)
 			if err != nil {
-				ch <- ErrorCreatingFile
+				ch <- DStartErrorCreatingFile
 				return
 			}
 			defer out.Close()
 
 			headResp, err := http.Head(url)
 			if err != nil {
-				ch <- ErrorSendingRequest
+				ch <- DStartErrorSendingRequest
 				return
 			}
 			defer headResp.Body.Close()
 
 			size, err := strconv.Atoi(headResp.Header.Get("Content-Length"))
 			if err != nil {
-				ch <- ErrorReadingContentLength
+				ch <- DStartErrorReadingContentLength
 				return
 			}
 
 			resp, err := http.Get(url)
 			if err != nil {
-				ch <- ErrorSendingRequest
+				ch <- DStartErrorSendingRequest
 				return
 			}
 			defer resp.Body.Close()
 
 			log.Println("download at", downloadPath, "started")
-			ch <- StartedDownloading
+			ch <- DStartOk
 
 			ctx, fn := context.WithCancel(context.Background())
 
@@ -124,52 +124,52 @@ func (d *DownloadHelper) StartDownload(downloadPath, url string) DownloadStartSt
 type GetDownloadStatusStatus int
 
 const (
-	GetDownloadStatusOk GetDownloadStatusStatus = iota
-	GetDownloadStatusNotFound
-	GetDownloadStatusError
+	DStatusOk GetDownloadStatusStatus = iota
+	DStatusFound
+	DStatusError
 )
 
 func (d *DownloadHelper) GetDownloadStatus(path string) (models.DownloadEntry, GetDownloadStatusStatus) {
 	entry, ok := d.DownloadEntries.Load(path)
 	if !ok {
-		return models.DownloadEntry{}, GetDownloadStatusNotFound
+		return models.DownloadEntry{}, DStatusFound
 	}
 
 	file, err := os.Open(path)
 	if err != nil {
 		log.Printf("Error opening file %s: %s", path, err)
-		return models.DownloadEntry{}, GetDownloadStatusError
+		return models.DownloadEntry{}, DStatusError
 	}
 	defer file.Close()
 
 	fi, err := file.Stat()
 	if err != nil {
 		log.Printf("Error stating file %s: %s", path, err)
-		return models.DownloadEntry{}, GetDownloadStatusError
+		return models.DownloadEntry{}, DStatusError
 	}
 
 	entry.DownloadedBytes = int(fi.Size())
-	return entry, GetDownloadStatusOk
+	return entry, DStatusOk
 }
 
 type CancelDownloadStatus int
 
 const (
-	CancelDownloadStatusOk CancelDownloadStatus = iota
-	CancelDownloadStatusNotFound
-	CancelDownloadStatusNotInProgress
+	DCancelOk CancelDownloadStatus = iota
+	DCancelNotFound
+	DCancelNotInProgress
 )
 
 func (d *DownloadHelper) CancelDownload(path string) CancelDownloadStatus {
 	entry, ok := d.DownloadEntries.Load(path)
 	if !ok {
-		return CancelDownloadStatusNotFound
+		return DCancelNotFound
 	}
 	switch entry.Status {
 	case models.DownloadInProgress:
 		entry.CancellationFunc()
-		return CancelDownloadStatusOk
+		return DCancelOk
 	default:
-		return CancelDownloadStatusNotInProgress
+		return DCancelNotInProgress
 	}
 }

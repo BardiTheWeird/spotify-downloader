@@ -34,7 +34,7 @@ func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 		case spotify.BadClientCredentials:
 			WriteJsonResponse(rw,
 				http.StatusHTTPVersionNotSupported,
-				models.CreateErrorPayload(0, "bad spotify client id or key"))
+				models.CreateErrorPayload("bad spotify client id or key"))
 		case spotify.Ok:
 			bytes, _ := json.Marshal(playlist)
 			WriteJsonResponse(rw, http.StatusOK, bytes)
@@ -62,7 +62,6 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 			WriteJsonResponse(rw,
 				http.StatusNotFound,
 				models.CreateErrorPayload(
-					404,
 					fmt.Sprintf("No entry for song with id %s", id),
 				),
 			)
@@ -70,7 +69,6 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 			WriteJsonResponse(rw,
 				http.StatusNotFound,
 				models.CreateErrorPayload(
-					404,
 					fmt.Sprintf("No YouTube link for song with id %s", id),
 				),
 			)
@@ -112,25 +110,25 @@ func (s *Server) handleDownloadStart() func(http.ResponseWriter, *http.Request) 
 			downloadLink)
 
 		switch status {
-		case downloader.ErrorCreatingFile:
+		case downloader.DStartErrorCreatingFile:
 			WriteJsonResponse(rw,
 				http.StatusBadRequest,
-				models.CreateErrorPayload(
+				models.CreateErrorPayloadWithCode(
 					403,
 					"could not create a file at "+filepath,
 				),
 			)
-		case downloader.ErrorSendingRequest:
+		case downloader.DStartErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
-		case downloader.ErrorReadingContentLength:
+		case downloader.DStartErrorReadingContentLength:
 			WriteJsonResponse(rw,
 				http.StatusBadRequest,
-				models.CreateErrorPayload(
+				models.CreateErrorPayloadWithCode(
 					400,
 					"error reading content-length at the download link",
 				),
 			)
-		case downloader.StartedDownloading:
+		case downloader.DStartOk:
 			rw.WriteHeader(http.StatusNoContent)
 		}
 	}
@@ -146,14 +144,11 @@ func (s *Server) handleDownloadStatus() func(http.ResponseWriter, *http.Request)
 
 		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(path)
 		switch responseStatus {
-		case downloader.GetDownloadStatusNotFound:
+		case downloader.DStatusFound:
 			rw.WriteHeader(http.StatusNotFound)
-		case downloader.GetDownloadStatusOk:
+		case downloader.DStatusOk:
 			bytes, _ := json.Marshal(downloadEntry)
-			WriteJsonResponse(rw,
-				http.StatusOK,
-				bytes,
-			)
+			WriteJsonResponse(rw, http.StatusOK, bytes)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
@@ -169,11 +164,11 @@ func (s *Server) handleDownloadCancel() func(http.ResponseWriter, *http.Request)
 		}
 
 		switch status := s.DownloadHelper.CancelDownload(path); status {
-		case downloader.CancelDownloadStatusNotFound:
+		case downloader.DCancelNotFound:
 			rw.WriteHeader(http.StatusNotFound)
-		case downloader.CancelDownloadStatusNotInProgress:
+		case downloader.DCancelNotInProgress:
 			rw.WriteHeader(http.StatusConflict)
-		case downloader.CancelDownloadStatusOk:
+		case downloader.DCancelOk:
 			rw.WriteHeader(http.StatusNoContent)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
@@ -195,12 +190,12 @@ func (s *Server) handleSpotifyConfigure() func(http.ResponseWriter, *http.Reques
 
 		if len(configuration.ClientId) == 0 {
 			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayload(0, "client_id is empty"))
+				models.CreateErrorPayload("client_id is empty"))
 			return
 		}
 		if len(configuration.ClientSecret) == 0 {
 			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayload(0, "client_secret is empty"))
+				models.CreateErrorPayload("client_secret is empty"))
 			return
 		}
 
@@ -211,7 +206,8 @@ func (s *Server) handleSpotifyConfigure() func(http.ResponseWriter, *http.Reques
 
 		if !s.SpotifyHelper.UpdateClientToken() {
 			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayload(401, "can't authenticate using new credentials"))
+				models.CreateErrorPayloadWithCode(401,
+					"can't authenticate using new credentials"))
 
 			s.SpotifyHelper.ClientId = oldClientId
 			s.SpotifyHelper.ClientSecret = oldClientSecret

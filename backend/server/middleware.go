@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"spotify-downloader/models"
@@ -30,8 +29,7 @@ func IsFeatureEnabled(feature *bool, featureName string) func(http.Handler) http
 				WriteJsonResponse(rw,
 					http.StatusServiceUnavailable,
 					models.CreateErrorPayload(
-						0,
-						fmt.Sprint(featureName, " is not available"),
+						featureName+" is not available",
 					))
 				return
 			}
