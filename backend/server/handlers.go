@@ -12,6 +12,15 @@ import (
 	"spotify-downloader/spotify"
 )
 
+// OPTIONS /
+func (s *Server) handleOptions() func(http.ResponseWriter, *http.Request) {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Access-Control-Allow-Origin", "*")
+		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		rw.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Length, Authorization")
+	}
+}
+
 // "/playlist"
 func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {

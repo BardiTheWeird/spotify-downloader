@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func (s *Server) ConfigureRoutes() {
@@ -13,6 +14,16 @@ func (s *Server) ConfigureRoutes() {
 
 func (s *Server) apiRouter() *chi.Mux {
 	r := chi.NewRouter()
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
+	r.Options("/", s.handleOptions())
 	r.Route("/spotify", func(r chi.Router) {
 		r.Get("/playlist", s.handlePlaylist())
 		r.Post("/configure", s.handleSpotifyConfigure())

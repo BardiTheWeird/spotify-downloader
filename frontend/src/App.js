@@ -27,8 +27,9 @@ export function InputBar() {
     e.preventDefault();
     console.log(formData);
     fetch("http://localhost:8080/api/v1/spotify/playlist?id=" + formData)
-      .then(response => {
+      .then(async response => {
         console.log(response);
+	console.log(await response.json());
       })
   }
   return (
