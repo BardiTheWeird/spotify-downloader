@@ -16,7 +16,7 @@ type Playlist = {
 	owner: PlaylistOwner,
 	href: string,
 	image: string,
-	tracks: Track	
+	tracks: Track[]	
 }
 
 type PlaylistOwner = {
@@ -79,7 +79,7 @@ Everything starts with /api/v1
 	```
 	type SpotifyClientConfiguration {
 		client_id: string,
-		client_seret: string
+		client_secret: string
 	}
 	```
 	- Status codes:
