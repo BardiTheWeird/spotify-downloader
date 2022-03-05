@@ -26,6 +26,10 @@ export function InputBar() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
+    fetch("http://localhost:8080/api/v1/spotify/playlist?id=" + formData)
+      .then(response => {
+        console.log(response);
+      })
   }
   return (
     <div className="Bar">
