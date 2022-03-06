@@ -54,7 +54,9 @@ export function InputBar() {
 export default App;
 
 export function PlaylistTable(props) {
-  // const TableArr = playlist.tracks.map()
+  const [checkedTracks, updateCheckedTracks] = 
+    React.useState(Array(props.playlist.tracks.length).fill(true));
+
   return (
     <>
       <table className='Table'>
@@ -66,10 +68,16 @@ export function PlaylistTable(props) {
           <th>Album</th>
         </tr>
         {
-          props.playlist.tracks.map(track =>
+          props.playlist.tracks.map((track, index) =>
             (
               <tr>
-                <td><input type="checkbox"/></td>
+                <td><input type="checkbox" checked={checkedTracks[index]} onChange={
+                  e => {
+                    const clonedCheckedTracks = [...checkedTracks];
+                    clonedCheckedTracks[index] = !clonedCheckedTracks[index];
+                    updateCheckedTracks(clonedCheckedTracks);
+                  }
+                }/></td>
                 <td><img src={track.album_image}
                 height="30" px/>
                 </td>
