@@ -16,17 +16,20 @@ func WriteJsonResponse(rw http.ResponseWriter, statusCode int, payload []byte) {
 	rw.Write(payload)
 }
 
-func GetQueryParameterOrWriteErrorResponse(parameter string, rw http.ResponseWriter, r *http.Request) (string, bool) {
+func GetQueryParameter(parameter string, r *http.Request) (string, bool) {
 	val := r.URL.Query().Get(parameter)
-	present := true
-	if len(val) == 0 {
+	return val, len(val) != 0
+}
+
+func GetQueryParameterOrWriteErrorResponse(parameter string, rw http.ResponseWriter, r *http.Request) (string, bool) {
+	val, present := GetQueryParameter(parameter, r)
+	if !present {
 		WriteJsonResponse(
 			rw,
 			400,
 			models.CreateErrorPayload(
 				fmt.Sprintf("'%s' query parameter is missing", parameter)),
 		)
-		present = false
 	}
 	return val, present
 }

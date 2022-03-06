@@ -65,7 +65,8 @@ enum DownloadStatus = {
 # Endpoints
 Everything starts with /api/v1
 - `GET /spotify/playlist?id={spotify_playlist_id}`
-	- Returns a Playlist entity for a specified Spotify Id
+	- `GET /spotify/playlist?link={spotify_playlist_link}`
+	- Returns a Playlist entity for a specified Spotify Playlist Id or Spotify Playlist Link. When both `id` and `link` are provided, `id` takes precedence.
 	- Status codes:
 		- 200 + playlist payload
 		- 400 + error payload => "id" is empty

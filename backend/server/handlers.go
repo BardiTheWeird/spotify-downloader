@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"path"
 	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
 	"spotify-downloader/models"
@@ -24,9 +26,18 @@ func (s *Server) handleOptions() func(http.ResponseWriter, *http.Request) {
 // "/playlist"
 func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		id, ok := GetQueryParameterOrWriteErrorResponse("id", rw, r)
+		id, ok := GetQueryParameter("id", r)
 		if !ok {
-			return
+			link, ok := GetQueryParameterOrWriteErrorResponse("link", rw, r)
+			if !ok {
+				return
+			}
+			spotifyUrl, err := url.Parse(link)
+			if err != nil {
+				WriteJsonResponse(rw, 400,
+					models.CreateErrorPayload("link is not a valid url"))
+			}
+			id = path.Base(spotifyUrl.Path)
 		}
 
 		playlist, status := s.SpotifyHelper.GetPlaylistById(id)
