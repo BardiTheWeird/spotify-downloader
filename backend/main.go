@@ -12,7 +12,7 @@ func main() {
 
 func runServer() {
 	srv := server.Server{}
-	srv.ConfigureFromEnv()
+	srv.ConfigureFromSettingsFile()
 	srv.ConfigureRoutes()
 	srv.DiscoverFeatures()
 
