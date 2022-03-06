@@ -18,6 +18,7 @@ export function App() {
 
 export function InputBar() {
   const [formData, updateFormData] = React.useState();
+  const [playlist, updatePlaylist] = React.useState();
 
   const handleChange = (e) => {
     updateFormData(e.target.value.trim());
@@ -25,26 +26,38 @@ export function InputBar() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
-    fetch("http://localhost:8080/api/v1/spotify/playlist?id=" + formData)
+    fetch("http://localhost:8080/api/v1/spotify/playlist?link=" + formData)
       .then(async response => {
-        console.log(response);
-	console.log(await response.json());
+        updatePlaylist(await response.json())
       })
   }
+  
   return (
-    <div className="Bar">
-      <div>
-        <div className="SearchBar">
-          <form onSubmit={handleSubmit} class="inputForm">
-            <input type="text" name='PL-URL' required class="inputForm" onChange={handleChange}/>
-            <input type="submit"/>
-          </form>
+    <>
+      <div className="Bar">
+        <div>
+          <div className="SearchBar">
+            <form onSubmit={handleSubmit} class="inputForm">
+              <input type="text" name='PL-URL' required class="inputForm" onChange={handleChange}/>
+              <input type="submit"/>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
-    
+      { playlist &&
+        <PlaylistTable playlist={playlist}/>
+      }
+    </>
   );
 }
 
 export default App;
+
+export function PlaylistTable(props) {
+  
+  return (
+    <>
+        <div>{props.playlist.tracks[5].title}</div>
+    </>
+  )
+}
