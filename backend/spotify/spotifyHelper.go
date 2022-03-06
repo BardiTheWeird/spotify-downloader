@@ -16,19 +16,15 @@ type SpotifyHelper struct {
 
 	Token struct {
 		Value     string
-		ExpiresIn time.Duration
-		Timestamp time.Time
+		ExpiresAt time.Time
 	}
 }
 
 func (s *SpotifyHelper) UseClientAuthentication(r *http.Request) bool {
-	if len(s.Token.Value) == 0 ||
-		time.Now().After(s.Token.Timestamp.Add(time.Second*s.Token.ExpiresIn)) {
-
+	if len(s.Token.Value) == 0 || time.Now().After(s.Token.ExpiresAt) {
 		if !s.UpdateClientToken() {
 			return false
 		}
-		log.Println("Spotify authentication token was refreshed")
 	}
 	r.Header.Add("Authorization", s.Token.Value)
 	return true
@@ -62,8 +58,7 @@ func (s *SpotifyHelper) UpdateClientToken() bool {
 	}
 
 	s.Token.Value = token.TokenType + " " + token.AccessToken
-	s.Token.ExpiresIn = time.Second * time.Duration(token.ExpiresIn)
-	s.Token.Timestamp = time.Now()
+	s.Token.ExpiresAt = time.Now().Add(time.Second * time.Duration(token.ExpiresIn))
 	log.Println("spotify client token refreshed")
 	return true
 }
