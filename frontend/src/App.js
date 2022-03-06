@@ -66,6 +66,7 @@ export function PlaylistTable(props) {
           <th>Artist</th>
           <th>Track Name</th>
           <th>Album</th>
+          <th>Alailiable/Status</th>
         </tr>
         {
           props.playlist.tracks.map((track, index) =>
@@ -84,6 +85,7 @@ export function PlaylistTable(props) {
                 <td>{track.artists}</td>
                 <td>{track.title}</td>
                 <td>{track.album_title}</td>
+                <td>YouTubeAvailiable?</td>
               </tr>
             )
           )
