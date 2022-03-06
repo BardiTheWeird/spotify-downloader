@@ -54,6 +54,7 @@
   font-size: 14px;
   color: white;
   border-color: darkgray;
-  display: block;
   border: 2px;
+  margin-left: auto;
+  margin-right: auto;
 }
