@@ -54,10 +54,33 @@ export function InputBar() {
 export default App;
 
 export function PlaylistTable(props) {
-  
+  // const TableArr = playlist.tracks.map()
   return (
     <>
-        <div>{props.playlist.tracks[5].title}</div>
+      <table className='Table'>
+        <tr>
+          <th></th>
+          <th>Logo</th>
+          <th>Artist</th>
+          <th>Track Name</th>
+          <th>Album</th>
+        </tr>
+        {
+          props.playlist.tracks.map(track =>
+            (
+              <tr>
+                <td><input type="checkbox"/></td>
+                <td><img src={track.album_image}
+                height="30" px/>
+                </td>
+                <td>{track.artists}</td>
+                <td>{track.title}</td>
+                <td>{track.album_title}</td>
+              </tr>
+            )
+          )
+        }
+      </table>
     </>
   )
 }

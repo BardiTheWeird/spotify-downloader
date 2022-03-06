@@ -49,3 +49,11 @@
   display: flex;
   justify-content: space-between;
 }
+
+.Table {
+  font-size: 14px;
+  color: white;
+  border-color: darkgray;
+  display: block;
+  border: 2px;
+}
