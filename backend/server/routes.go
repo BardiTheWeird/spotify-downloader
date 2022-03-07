@@ -23,7 +23,6 @@ func (s *Server) apiRouter() *chi.Mux {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	r.Options("/", s.handleOptions())
 	r.Route("/spotify", func(r chi.Router) {
 		r.Get("/playlist", s.handlePlaylist())
 		r.Post("/configure", s.handleSpotifyConfigure())

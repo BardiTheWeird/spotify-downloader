@@ -14,17 +14,49 @@ import (
 	"spotify-downloader/spotify"
 )
 
-// OPTIONS /
-func (s *Server) handleOptions() func(http.ResponseWriter, *http.Request) {
+func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Set("Access-Control-Allow-Origin", "*")
-		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		rw.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Length, Authorization")
+		configuration := struct {
+			ClientId     string `json:"client_id"`
+			ClientSecret string `json:"client_secret"`
+		}{}
+
+		err := json.NewDecoder(r.Body).Decode(&configuration)
+		if err != nil {
+			log.Panicln("error decoding client configuration")
+		}
+
+		if len(configuration.ClientId) == 0 {
+			WriteJsonResponse(rw, 400,
+				models.CreateErrorPayload("client_id is empty"))
+			return
+		}
+		if len(configuration.ClientSecret) == 0 {
+			WriteJsonResponse(rw, 400,
+				models.CreateErrorPayload("client_secret is empty"))
+			return
+		}
+
+		oldClientId := s.SpotifyHelper.ClientId
+		oldClientSecret := s.SpotifyHelper.ClientSecret
+		s.SpotifyHelper.ClientId = configuration.ClientId
+		s.SpotifyHelper.ClientSecret = configuration.ClientSecret
+
+		if !s.SpotifyHelper.UpdateClientToken() {
+			WriteJsonResponse(rw, 400,
+				models.CreateErrorPayloadWithCode(401,
+					"can't authenticate using new credentials"))
+
+			s.SpotifyHelper.ClientId = oldClientId
+			s.SpotifyHelper.ClientSecret = oldClientSecret
+			s.SpotifyHelper.UpdateClientToken()
+			return
+		}
+		rw.WriteHeader(http.StatusNoContent)
 	}
 }
 
-// "/playlist"
-func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
+func (s *Server) handlePlaylist() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		id, ok := GetQueryParameter("id", r)
 		if !ok {
@@ -62,8 +94,7 @@ func (s *Server) handlePlaylist() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-// "/s2y"
-func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
+func (s *Server) handleS2Y() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		SetContentTypeToJson(rw)
 		id, ok := GetQueryParameterOrWriteErrorResponse("id", rw, r)
@@ -102,14 +133,8 @@ func (s *Server) handleS2Y() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-// "/download/start"
-func (s *Server) handleDownloadStart() func(http.ResponseWriter, *http.Request) {
+func (s *Server) handleDownloadStart() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		// if !s.FeatureYoutubeDlInstalled {
-		// 	rw.WriteHeader(http.StatusServiceUnavailable)
-		// 	rw.Write([]byte("youtube-dl is not installed, thus downloads are unavailable"))
-		// }
-
 		filepath, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
 			return
@@ -154,8 +179,7 @@ func (s *Server) handleDownloadStart() func(http.ResponseWriter, *http.Request) 
 	}
 }
 
-// "/download/status"
-func (s *Server) handleDownloadStatus() func(http.ResponseWriter, *http.Request) {
+func (s *Server) handleDownloadStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
@@ -175,8 +199,7 @@ func (s *Server) handleDownloadStatus() func(http.ResponseWriter, *http.Request)
 	}
 }
 
-// "/download/cancel"
-func (s *Server) handleDownloadCancel() func(http.ResponseWriter, *http.Request) {
+func (s *Server) handleDownloadCancel() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
@@ -193,47 +216,5 @@ func (s *Server) handleDownloadCancel() func(http.ResponseWriter, *http.Request)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
-	}
-}
-
-func (s *Server) handleSpotifyConfigure() func(http.ResponseWriter, *http.Request) {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		configuration := struct {
-			ClientId     string `json:"client_id"`
-			ClientSecret string `json:"client_secret"`
-		}{}
-
-		err := json.NewDecoder(r.Body).Decode(&configuration)
-		if err != nil {
-			log.Panicln("error decoding client configuration")
-		}
-
-		if len(configuration.ClientId) == 0 {
-			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayload("client_id is empty"))
-			return
-		}
-		if len(configuration.ClientSecret) == 0 {
-			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayload("client_secret is empty"))
-			return
-		}
-
-		oldClientId := s.SpotifyHelper.ClientId
-		oldClientSecret := s.SpotifyHelper.ClientSecret
-		s.SpotifyHelper.ClientId = configuration.ClientId
-		s.SpotifyHelper.ClientSecret = configuration.ClientSecret
-
-		if !s.SpotifyHelper.UpdateClientToken() {
-			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayloadWithCode(401,
-					"can't authenticate using new credentials"))
-
-			s.SpotifyHelper.ClientId = oldClientId
-			s.SpotifyHelper.ClientSecret = oldClientSecret
-			s.SpotifyHelper.UpdateClientToken()
-			return
-		}
-		rw.WriteHeader(http.StatusNoContent)
 	}
 }
