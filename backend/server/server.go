@@ -3,7 +3,6 @@ package server
 import (
 	"log"
 	"net/http"
-	"os"
 	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
 	"spotify-downloader/songlink"
@@ -25,20 +24,6 @@ type Server struct {
 
 func (s *Server) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(rw, r)
-}
-
-func (s *Server) ConfigureFromEnv() {
-	getEnvOrDefault := func(envKey, def string) string {
-		val, err := os.LookupEnv(envKey)
-		if !err {
-			log.Printf("%s is not set, using %s\n", envKey, def)
-			val = def
-		}
-		return val
-	}
-
-	s.SpotifyHelper.ClientId = getEnvOrDefault("CLIENT_ID", "00000000000000000000000000000000")
-	s.SpotifyHelper.ClientSecret = getEnvOrDefault("CLIENT_SECRET", "00000000000000000000000000000000")
 }
 
 func (s *Server) DiscoverFeatures() {
