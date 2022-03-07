@@ -34,5 +34,6 @@ func (s *Server) apiRouter() *chi.Mux {
 		r.Get("/status", s.handleDownloadStatus())
 		r.Post("/cancel", s.handleDownloadCancel())
 	})
+	r.Get("/features", s.handleFeatures())
 	return r
 }

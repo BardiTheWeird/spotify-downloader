@@ -88,8 +88,7 @@ func (s *Server) handlePlaylist() http.HandlerFunc {
 				http.StatusHTTPVersionNotSupported,
 				models.CreateErrorPayload("bad spotify client id or key"))
 		case spotify.Ok:
-			bytes, _ := json.Marshal(playlist)
-			WriteJsonResponse(rw, http.StatusOK, bytes)
+			WriteJsonResponse(rw, http.StatusOK, playlist)
 		}
 	}
 }
@@ -124,10 +123,9 @@ func (s *Server) handleS2Y() http.HandlerFunc {
 				),
 			)
 		case songlink.Found:
-			bytes, _ := json.Marshal(downloadLink)
 			WriteJsonResponse(rw,
 				http.StatusOK,
-				bytes,
+				downloadLink,
 			)
 		}
 	}
@@ -191,8 +189,7 @@ func (s *Server) handleDownloadStatus() http.HandlerFunc {
 		case downloader.DStatusFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case downloader.DStatusOk:
-			bytes, _ := json.Marshal(downloadEntry)
-			WriteJsonResponse(rw, http.StatusOK, bytes)
+			WriteJsonResponse(rw, http.StatusOK, downloadEntry)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
@@ -216,5 +213,21 @@ func (s *Server) handleDownloadCancel() http.HandlerFunc {
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
+	}
+}
+
+func (s *Server) handleFeatures() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		features := struct {
+			YoutubeDl bool `json:"youtube_dl"`
+			Ffmpeg    bool `json:"ffmpeg"`
+		}{
+			YoutubeDl: s.FeatureYoutubeDlInstalled,
+			Ffmpeg:    s.FeatureFfmpegInstalled,
+		}
+
+		WriteJsonResponse(rw,
+			http.StatusOK,
+			features)
 	}
 }

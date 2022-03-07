@@ -124,3 +124,13 @@ Everything starts with /api/v1
 		- 405 => used method other than POST
 		- 409 => not in progress
 		- 500 => cancellation status not handled by the server
+- `GET /features`
+	- Returns available/installed features
+	- Status code 200
+	- Model:
+	```
+	type FeaturesAvailable{
+		youtube_dl: bool,
+		ffmpeg: bool
+	}
+	```
