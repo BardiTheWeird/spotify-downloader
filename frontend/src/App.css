@@ -58,3 +58,15 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+.DonwloadButton {
+  display: block;
+  padding: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: rgb(rgb(118, 121, 146), green, blue);
+}
+
+.DonwloadButton:hover {
+  background-color: rgb(rgb(96, 139, 96), green, blue);
+}

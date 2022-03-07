@@ -59,6 +59,10 @@ export function PlaylistTable(props) {
 
   return (
     <>
+      <button className='DonwloadButton' onClick={DonwloadList =>
+      (DonwloadList = props.playlist.tracks.map((checkedTracks)))}
+      >Download selected
+      </button>
       <table className='Table'>
         <tr>
           <th></th>
