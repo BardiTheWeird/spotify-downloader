@@ -52,6 +52,7 @@ func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
 			s.SpotifyHelper.UpdateClientToken()
 			return
 		}
+		s.UpdateSettingsFile()
 		rw.WriteHeader(http.StatusNoContent)
 	}
 }
