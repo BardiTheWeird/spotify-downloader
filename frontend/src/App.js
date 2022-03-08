@@ -29,6 +29,7 @@ export function InputBar() {
     let response = await fetch("http://localhost:8080/api/v1/spotify/playlist?link=" + formData);
     let playlist = await response.json();
     updatePlaylist(playlist);
+    console.log(response)
   }
   
   return (
@@ -37,14 +38,14 @@ export function InputBar() {
         <div>
           <div className="SearchBar">
             <form onSubmit={submitPlaylistLink} class="inputForm">
-              <input type="text" name='PL-URL' required class="inputForm" onChange={
+              <input placeholder='Spotify Playlist Link' type="text" name='PL-URL' required class="inputForm" onChange={
                 e => updateFormData(e.target.value.trim())}/>
               <input type="submit"/>
             </form>
           </div>
           <div className="SearchBar">
             <form class="inputForm">
-              <input type="text" name='DL-path' required class="inputForm" onChange={
+              <input placeholder='Download Directory' type="text" name='DL-path' required class="inputForm" onChange={
                 e => updateDownloadPath(e.target.value)}/>
             </form>
           </div>
@@ -66,6 +67,13 @@ export function PlaylistTable({playlist, downloadPath}) {
       status: "NA"
     };
   }));
+  // WTF IS THIS AND WHY DOES IT WORK
+  React.useEffect(() => {updateTracks(playlist.tracks.map(track => {
+    return {...track,
+      checked: true,
+      status: "NA"
+    };
+  }))}, [playlist]);
 
   return (
     <>
