@@ -71,6 +71,8 @@
   border: 2px;
   margin-left: auto;
   margin-right: auto;
+  padding-left: 20px;
+  padding-right: 10px;
 }
 
 .DownloadButton {
@@ -95,4 +97,23 @@
 
 .checkmark:hover {
   background-color: beige;
+}
+
+.inline-buttons {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  width: 300px;
+}
+
+.CancelDownloadButton {
+  display: block;
+  padding: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: crimson;
+}
+
+.CancelDownloadButton:hover {
+  background-color: brown;
 }

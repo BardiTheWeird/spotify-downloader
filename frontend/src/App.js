@@ -69,29 +69,33 @@ export function PlaylistTable({playlist, downloadPath}) {
 
   return (
     <>
-      <button className='DownloadButton' onClick={() => {
-          tracks.forEach(async (track, index) => {
-            if (!track.checked) {
-              return;
-            }
-            let url = `http://localhost:8080/api/v1/download/start?id=${track.id}&path=`;
-            const title = `${track.artists} - ${track.title}`
-            console.log("downloadPath is", downloadPath);
-            if (downloadPath) {
-              url += `${downloadPath}/${title}.mp4`;
-            }
-            else {
-              url += `./userDownloads/${title}.mp4`;
-            }
-            let downloadResponse = await fetch(url, {
-              method: 'POST'
-            });
-            console.log(downloadResponse);
-          })
+      <div className='inline-buttons'>
+        <button className='DownloadButton' onClick={() => {
+            tracks.forEach(async (track, index) => {
+              if (!track.checked) {
+                return;
+              }
+              let url = `http://localhost:8080/api/v1/download/start?id=${track.id}&path=`;
+              const title = `${track.artists} - ${track.title}`
+              console.log("downloadPath is", downloadPath);
+              if (downloadPath) {
+                url += `${downloadPath}/${title}.mp4`;
+              }
+              else {
+                url += `./userDownloads/${title}.mp4`;
+              }
+              let downloadResponse = await fetch(url, {
+                method: 'POST'
+              });
+              console.log(downloadResponse);
+            })
+          }
         }
-      }
-      >Download selected
-      </button>
+        >Download selected
+        </button>
+        <button className='CancelDownloadButton' disabled={true}>Cancel Download</button>
+      </div>
+      
       <table className='Table'>
         <tr>
           <th>
