@@ -53,14 +53,19 @@ export function InputBar() {
 
 export default App;
 
-export function PlaylistTable(props) {
+export function PlaylistTable({playlist}) {
   const [checkedTracks, updateCheckedTracks] = 
-    React.useState(Array(props.playlist.tracks.length).fill(true));
+    React.useState(Array(playlist.tracks.length).fill(true));
 
   return (
     <>
-      <button className='DonwloadButton' onClick={DonwloadList =>
-      (DonwloadList = props.playlist.tracks.map((checkedTracks)))}
+      <button className='DonwloadButton' onClick={() => {
+          const tracksToDownload = playlist.tracks.filter((_, i) => checkedTracks[i]);
+          const tracksToDownloadId = tracksToDownload.map(track => track.id)
+
+          console.log(tracksToDownloadId);
+        }
+      }
       >Download selected
       </button>
       <table className='Table'>
@@ -73,7 +78,7 @@ export function PlaylistTable(props) {
           <th>Alailiable/Status</th>
         </tr>
         {
-          props.playlist.tracks.map((track, index) =>
+          playlist.tracks.map((track, index) =>
             (
               <tr>
                 <td><input type="checkbox" checked={checkedTracks[index]} onChange={
