@@ -75,3 +75,13 @@
 .DonwloadButton:hover {
   background-color: rgb(rgb(96, 139, 96), green, blue);
 }
+
+.checkmark {
+  height: 25px;
+  width: 25px;
+  background-color: aliceblue;
+}
+
+.checkmark:hover {
+  background-color: beige;
+}

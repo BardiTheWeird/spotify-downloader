@@ -60,20 +60,60 @@ export function PlaylistTable({playlist}) {
     };
   }));
 
+  // function SendTrack(tracksToDownload) {
+  //   const HandleDownload = async (e) => {
+  //     e.preventDefault();
+  //     let DownloadResponce = await fetch("http://localhost:8080/api/v1/spotify/playlist?link=" + tracksToDownloadId.map(track));
+  //     if (DownloadResponce == "204") {
+
+  //       {React.setState.track.status: "Donwloading"}
+  //     }
+  //     else if (DownloadResponce == "401") {
+  //       {React.setState.track.status: "Not Authorized"}
+  //     }
+  //     else if (DownloadResponce == "404") {
+  //       {React.setState.track.status: "Wrong PL ID"}
+  //     }
+  //     else if (DownloadResponce == "429") {
+  //       {React.setState.track.status: "Too many Requests"}
+  //     }
+  //   }
+  // }
+
   return (
     <>
       <button className='DonwloadButton' onClick={() => {
-          const tracksToDownload = tracks.filter(track => !track.checked);
-          const tracksToDownloadId = tracksToDownload.map(track => track.id)
-          console.log(tracksToDownload)
+          tracks.forEach(async (track, index) => {
+            if (!track.checked) {
+              return;
+            }
+            const url = `http://localhost:8080/api/v1/download/start?id=${track.id}&path=./userDownloads/${`${track.artists} - ${track.title}`}.mp4`;
+            let downloadResponce = await fetch(url, {
+              method: 'POST'
+            });
+            console.log(downloadResponce);
+          })
         }
       }
       >Download selected
       </button>
       <table className='Table'>
         <tr>
-          <th></th>
-          <th></th>
+          <th>
+              <input type="checkbox" class="checkmark" onChange={
+                  e => {
+                    const isChecked = e.target.checked;
+                    
+                    const copiedTracks = [...tracks];
+                    copiedTracks.forEach(
+                      track => track.checked = isChecked
+                    )
+                    updateTracks(copiedTracks);
+                  }
+                }
+              />
+          </th>
+          <th>All</th>
           <th>Artist</th>
           <th>Track Name</th>
           <th>Album</th>
@@ -83,7 +123,7 @@ export function PlaylistTable({playlist}) {
           tracks.map((track, index) =>
             (
               <tr>
-                <td><input type="checkbox" checked={track.checked} onChange={
+                <td><input type="checkbox" class="checkmark" checked={track.checked} onChange={
                   e => {
                     const clonedTracks = [...tracks];
                     clonedTracks[index].checked = !clonedTracks[index].checked;
