@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"spotify-downloader/models"
 
 	"go.uber.org/ratelimit"
 )
@@ -29,7 +28,7 @@ const (
 	TooManyRequests
 )
 
-func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (models.DownloadLink, QueryResponseStatus) {
+func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (string, QueryResponseStatus) {
 	s.RateLimit.Take()
 
 	type SonglinkResponse struct {
@@ -51,17 +50,17 @@ func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (models.Dow
 	// actual ERRORS with a request or connectivity
 	if err != nil {
 		log.Printf("error sending a request to %s: %s\n", req.URL, err)
-		return models.DownloadLink{}, ErrorSendingRequest
+		return "", ErrorSendingRequest
 	}
 
 	// too many requests
 	if response.StatusCode == 429 {
-		return models.DownloadLink{}, TooManyRequests
+		return "", TooManyRequests
 	}
 
 	// no spotify song with such id exists
 	if response.StatusCode == 404 {
-		return models.DownloadLink{}, NoSongWithSuchId
+		return "", NoSongWithSuchId
 	}
 
 	body := SonglinkResponse{}
@@ -70,13 +69,9 @@ func (s *SonglinkHelper) GetYoutubeLinkBySpotifyId(spotifyId string) (models.Dow
 	youtubeLink := body.LinksByPlatform.Youtube.Url
 	// this song couldn't be found on YouTube
 	if len(youtubeLink) == 0 {
-		return models.DownloadLink{}, NoYoutubeLinkForSong
+		return "", NoYoutubeLinkForSong
 
 	}
 	// actually found a song
-	return models.DownloadLink{
-			SpotifyId: spotifyId,
-			Link:      youtubeLink,
-		},
-		Found
+	return youtubeLink, Found
 }
