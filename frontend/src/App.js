@@ -54,16 +54,19 @@ export function InputBar() {
 export default App;
 
 export function PlaylistTable({playlist}) {
-  const [checkedTracks, updateCheckedTracks] = 
-    React.useState(Array(playlist.tracks.length).fill(true));
+  const [tracks, updateTracks] = React.useState(playlist.tracks.map(track => {
+    return {...track,
+      checked: true,
+      status: "NA"
+    };
+  }));
 
   return (
     <>
       <button className='DonwloadButton' onClick={() => {
-          const tracksToDownload = playlist.tracks.filter((_, i) => checkedTracks[i]);
+          const tracksToDownload = tracks.filter(track => !track.checked);
           const tracksToDownloadId = tracksToDownload.map(track => track.id)
-
-          console.log(tracksToDownloadId);
+          console.log(tracksToDownload)
         }
       }
       >Download selected
@@ -78,14 +81,14 @@ export function PlaylistTable({playlist}) {
           <th>Alailiable/Status</th>
         </tr>
         {
-          playlist.tracks.map((track, index) =>
+          tracks.map((track, index) =>
             (
               <tr>
-                <td><input type="checkbox" checked={checkedTracks[index]} onChange={
+                <td><input type="checkbox" checked={track.checked} onChange={
                   e => {
-                    const clonedCheckedTracks = [...checkedTracks];
-                    clonedCheckedTracks[index] = !clonedCheckedTracks[index];
-                    updateCheckedTracks(clonedCheckedTracks);
+                    const clonedTracks = [...tracks];
+                    clonedTracks[index].checked = !clonedTracks[index].checked;
+                    updateTracks(clonedTracks);
                   }
                 }/></td>
                 <td><img src={track.album_image}
@@ -94,7 +97,7 @@ export function PlaylistTable({playlist}) {
                 <td>{track.artists}</td>
                 <td>{track.title}</td>
                 <td>{track.album_title}</td>
-                <td>YouTubeAvailiable?</td>
+                <td>{track.status}</td>
               </tr>
             )
           )
