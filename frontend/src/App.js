@@ -24,12 +24,11 @@ export function InputBar() {
     updateFormData(e.target.value.trim());
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch("http://localhost:8080/api/v1/spotify/playlist?link=" + formData)
-      .then(async response => {
-        updatePlaylist(await response.json())
-      })
+    let response = await fetch("http://localhost:8080/api/v1/spotify/playlist?link=" + formData);
+    let playlist = await response.json();
+    updatePlaylist(playlist);
   }
   
   return (
@@ -74,11 +73,11 @@ export function PlaylistTable({playlist}) {
       <table className='Table'>
         <tr>
           <th></th>
-          <th>Logo</th>
+          <th></th>
           <th>Artist</th>
           <th>Track Name</th>
           <th>Album</th>
-          <th>Alailiable/Status</th>
+          <th>Status</th>
         </tr>
         {
           tracks.map((track, index) =>
