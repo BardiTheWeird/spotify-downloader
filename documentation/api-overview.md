@@ -36,14 +36,6 @@ type Track = {
 	preview_url: string
 }
 ```
-## DownloadLink
-Is sent as a response when found a link to download a Spotify track from
-```
-type DownloadLink = {
-	spotify_id: string,
-	link: string
-}
-```
 ## DownloadEntry
 Is sent as a response when getting a status of a download
 ```
@@ -88,26 +80,17 @@ Everything starts with /api/v1
 		- 400 + error payload:
 			- 0 => client id or client secret not provided
 			- 400 => bad credentials
-- `GET /s2y?id={spotify_song_id}`
-	- Returns a YouTube link for a given Spotify song Id
-	- Status codes:
-		- 200 + downloadLink payload
-		- 400 => 'id' is empty
-		- 404 => (no such id / no yt link) + error payload:
-			- 400 => no entry for song with {id}
-			- 404 => no YouTube link for song with {id}
-		- 429 => too many requests (actually, the server first throttles to 10 requests per second, but if it overloads songlink in spite of that, it returns 429)
-		- 500
-- `POST /download/start?path={host_path}&link={youtube_link}`
+- `POST /download/start?id={spotify_song_id}&path={host_path}`
 	- Starts a download on a host machine
 	- Status codes:
 		- 204
-		- 400 + error payload => query parameter error
-			- "path" is empty
-			- "link" is empty
-		- 404 => youtube-dl couldn't find a download link
-		- 405 => used method other than POST
-		- 500 => youtube-dl execution error
+		- 400 => no songlink entry for song with such id (most likely, the id sent was wrong)
+		- 403 => can't create a file at filepath
+		- 404 =>
+			- no youtube link for song with such id
+			- no download link for youtube link (youtube api and/or youtube-dl weirdness)
+		- 429 => songlink too many requests
+		- 500 => songlink/download error sending request
 - `GET /download/status?path={host_path}`
 	- Returns a DownloadEntry of download at {path}
 	- Status codes:

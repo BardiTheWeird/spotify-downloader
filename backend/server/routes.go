@@ -27,7 +27,6 @@ func (s *Server) apiRouter() *chi.Mux {
 		r.Get("/playlist", s.handlePlaylist())
 		r.Post("/configure", s.handleSpotifyConfigure())
 	})
-	r.Get("/s2y", s.handleS2Y())
 	r.Route("/download", func(r chi.Router) {
 		r.With(IsFeatureEnabled(&s.FeatureYoutubeDlInstalled, "youtube-dl")).
 			Post("/start", s.handleDownloadStart())

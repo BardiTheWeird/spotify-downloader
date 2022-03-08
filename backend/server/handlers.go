@@ -93,24 +93,27 @@ func (s *Server) handlePlaylist() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleS2Y() http.HandlerFunc {
+func (s *Server) handleDownloadStart() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		SetContentTypeToJson(rw)
 		id, ok := GetQueryParameterOrWriteErrorResponse("id", rw, r)
 		if !ok {
 			return
 		}
+		filepath, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		if !ok {
+			return
+		}
 
-		downloadLink, statusCode := s.SonglinkHelper.GetYoutubeLinkBySpotifyId(id)
+		youtubeLink, s2yStatus := s.SonglinkHelper.GetYoutubeLinkBySpotifyId(id)
 
-		switch statusCode {
+		switch s2yStatus {
 		case songlink.ErrorSendingRequest:
 			rw.WriteHeader(http.StatusInternalServerError)
 		case songlink.TooManyRequests:
 			rw.WriteHeader(http.StatusTooManyRequests)
 		case songlink.NoSongWithSuchId:
 			WriteJsonResponse(rw,
-				http.StatusNotFound,
+				http.StatusBadRequest,
 				models.CreateErrorPayload(
 					fmt.Sprintf("No entry for song with id %s", id),
 				),
@@ -122,55 +125,36 @@ func (s *Server) handleS2Y() http.HandlerFunc {
 					fmt.Sprintf("No YouTube link for song with id %s", id),
 				),
 			)
-		case songlink.Found:
-			WriteJsonResponse(rw,
-				http.StatusOK,
-				downloadLink,
-			)
 		}
-	}
-}
 
-func (s *Server) handleDownloadStart() http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		filepath, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
-		if !ok {
-			return
-		}
-		youtubeLink, ok := GetQueryParameterOrWriteErrorResponse("link", rw, r)
-		if !ok {
+		if s2yStatus != songlink.Found {
 			return
 		}
 
 		downloadLink, exists := clihelpers.GetYoutubeDownloadLink(youtubeLink)
 		if !exists {
-			rw.WriteHeader(http.StatusNotFound)
+			WriteJsonResponse(rw,
+				http.StatusNotFound,
+				models.CreateErrorPayload(
+					"No download link found for youtube link "+youtubeLink,
+				),
+			)
 			return
 		}
 
-		status := s.DownloadHelper.StartDownload(
+		downloadStatus := s.DownloadHelper.StartDownload(
 			filepath,
 			downloadLink)
 
-		switch status {
+		switch downloadStatus {
 		case downloader.DStartErrorCreatingFile:
-			WriteJsonResponse(rw,
-				http.StatusBadRequest,
-				models.CreateErrorPayloadWithCode(
-					403,
+			WriteJsonResponse(rw, 403,
+				models.CreateErrorPayload(
 					"could not create a file at "+filepath,
 				),
 			)
-		case downloader.DStartErrorSendingRequest:
+		case downloader.DStartErrorSendingRequest, downloader.DStartErrorReadingContentLength:
 			rw.WriteHeader(http.StatusInternalServerError)
-		case downloader.DStartErrorReadingContentLength:
-			WriteJsonResponse(rw,
-				http.StatusBadRequest,
-				models.CreateErrorPayloadWithCode(
-					400,
-					"error reading content-length at the download link",
-				),
-			)
 		case downloader.DStartOk:
 			rw.WriteHeader(http.StatusNoContent)
 		}
