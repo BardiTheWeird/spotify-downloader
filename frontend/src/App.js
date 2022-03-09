@@ -83,17 +83,21 @@ export function PlaylistTable({playlist, downloadPath}) {
               if (!track.checked) {
                 return;
               }
-              let url = `http://localhost:8080/api/v1/download/start?id=${track.id}&path=`;
-              const title = `${track.artists} - ${track.title}`
-              console.log("downloadPath is", downloadPath);
-              if (downloadPath) {
-                url += `${downloadPath}/${title}.mp4`;
-              }
-              else {
-                url += `./userDownloads/${title}.mp4`;
+              let url = 'http://localhost:8080/api/v1/download/start';
+              let downloadFolder = downloadPath;
+              if (!downloadFolder) {
+                downloadFolder = "./userDownloads/"
               }
               let downloadResponse = await fetch(url, {
-                method: 'POST'
+                method: 'POST',
+                body: JSON.stringify({
+                  id: track.id,
+                  folder: downloadPath,
+                  filename: `${track.artists} - ${track.title}`,
+                  title: track.title,
+                  artist: track.artists,
+                  album: track.album
+                })
               });
               console.log(downloadResponse);
             })
