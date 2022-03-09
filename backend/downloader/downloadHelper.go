@@ -32,7 +32,7 @@ func (rf readerWithCancellationFunc) Read(p []byte) (n int, err error) {
 	return rf(p)
 }
 
-func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, convertToMp3 bool) DownloadStartStatus {
+func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, metadata clihelpers.FfmpegMetadata, convertToMp3 bool) DownloadStartStatus {
 	ch := make(chan DownloadStartStatus)
 	filepathNoExt := filepath.Join(downloadFolder, filename)
 	filepathTmp := filepathNoExt + ".tmp"
@@ -112,7 +112,7 @@ func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, con
 					entry.Status = models.DownloadConvertationInProgress
 					d.DownloadEntries.Store(filepathNoExt, entry)
 
-					err := clihelpers.FfmpegConvert(filepathTmp, filepathNoExt+".mp3")
+					err := clihelpers.FfmpegConvert(filepathTmp, filepathNoExt+".mp3", metadata)
 					if err != nil {
 						entry.Status = models.DownloadErrorConverting
 					} else {

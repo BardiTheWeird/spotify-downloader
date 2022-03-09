@@ -66,7 +66,6 @@ Everything starts with /api/v1
 		- 429 => too many requests
 		- 500
 - `POST /spotify/configure`
-	- Configure Spotify with Client Id and Client Secret
 	- Request Body:
 	```
 	type SpotifyClientConfiguration {
@@ -74,13 +73,27 @@ Everything starts with /api/v1
 		client_secret: string
 	}
 	```
+	- Configure Spotify with Client Id and Client Secret
 	- Status codes:
 		- 204
 		- 400 + error payload:
 			- 0 => client id or client secret not provided
 			- 400 => bad credentials
-- `POST /download/start?id={spotify_song_id}&folder={folder_path}&filename={file_name}`
+- `POST /download/start`
+	- Request Body:
+	```
+	type DownloadRequest {
+		id: string,
+		folder: string,
+		filename: string,
+		
+		title: string,
+		artist: string,
+		album: string
+	}
+	```
 	- Starts a download on a host machine at `folder_path/file_name`
+		- If ffmpeg is detected, it also converts the downloaded file to .mp3 with provided metadata
 	- Status codes:
 		- 204
 		- 400 => no songlink entry for song with such id (most likely, the id sent was wrong)
@@ -109,7 +122,7 @@ Everything starts with /api/v1
 - `GET /features`
 	- Returns available/installed features
 	- Status code 200
-	- Model:
+	- Response Body:
 	```
 	type FeaturesAvailable{
 		youtube_dl: bool,
