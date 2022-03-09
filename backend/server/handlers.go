@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"path/filepath"
 	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
 	"spotify-downloader/models"
@@ -100,7 +101,11 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 		if !ok {
 			return
 		}
-		filepath, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		folder, ok := GetQueryParameterOrWriteErrorResponse("folder", rw, r)
+		if !ok {
+			return
+		}
+		filename, ok := GetQueryParameterOrWriteErrorResponse("filename", rw, r)
 		if !ok {
 			return
 		}
@@ -144,14 +149,16 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 		}
 
 		downloadStatus := s.DownloadHelper.StartDownload(
-			filepath,
-			downloadLink)
+			folder,
+			filename,
+			downloadLink,
+			s.FeatureFfmpegInstalled)
 
 		switch downloadStatus {
 		case downloader.DStartErrorCreatingFile:
 			WriteJsonResponse(rw, 403,
 				models.CreateErrorPayload(
-					"could not create a file at "+filepath,
+					"could not create a file at "+filepath.Join(folder, filename),
 				),
 			)
 		case downloader.DStartErrorSendingRequest, downloader.DStartErrorReadingContentLength:
@@ -164,14 +171,18 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 
 func (s *Server) handleDownloadStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		folder, ok := GetQueryParameterOrWriteErrorResponse("folder", rw, r)
+		if !ok {
+			return
+		}
+		filename, ok := GetQueryParameterOrWriteErrorResponse("filename", rw, r)
 		if !ok {
 			return
 		}
 
-		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(path)
+		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(folder, filename)
 		switch responseStatus {
-		case downloader.DStatusFound:
+		case downloader.DStatusNotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case downloader.DStatusOk:
 			WriteJsonResponse(rw, http.StatusOK, downloadEntry)
@@ -183,12 +194,16 @@ func (s *Server) handleDownloadStatus() http.HandlerFunc {
 
 func (s *Server) handleDownloadCancel() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		folder, ok := GetQueryParameterOrWriteErrorResponse("folder", rw, r)
+		if !ok {
+			return
+		}
+		filename, ok := GetQueryParameterOrWriteErrorResponse("filename", rw, r)
 		if !ok {
 			return
 		}
 
-		switch status := s.DownloadHelper.CancelDownload(path); status {
+		switch status := s.DownloadHelper.CancelDownload(folder, filename); status {
 		case downloader.DCancelNotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case downloader.DCancelNotInProgress:
