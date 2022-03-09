@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"path/filepath"
 	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
 	"spotify-downloader/models"
+	"spotify-downloader/requesthelpers"
 	"spotify-downloader/songlink"
 	"spotify-downloader/spotify"
 )
@@ -27,13 +29,13 @@ func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
 		}
 
 		if len(configuration.ClientId) == 0 {
-			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayload("client_id is empty"))
+			requesthelpers.WriteJsonResponse(rw, 400,
+				requesthelpers.CreateErrorPayload("client_id is empty"))
 			return
 		}
 		if len(configuration.ClientSecret) == 0 {
-			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayload("client_secret is empty"))
+			requesthelpers.WriteJsonResponse(rw, 400,
+				requesthelpers.CreateErrorPayload("client_secret is empty"))
 			return
 		}
 
@@ -43,8 +45,8 @@ func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
 		s.SpotifyHelper.ClientSecret = configuration.ClientSecret
 
 		if !s.SpotifyHelper.UpdateClientToken() {
-			WriteJsonResponse(rw, 400,
-				models.CreateErrorPayloadWithCode(401,
+			requesthelpers.WriteJsonResponse(rw, 400,
+				requesthelpers.CreateErrorPayloadWithCode(401,
 					"can't authenticate using new credentials"))
 
 			s.SpotifyHelper.ClientId = oldClientId
@@ -59,16 +61,16 @@ func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
 
 func (s *Server) handlePlaylist() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		id, ok := GetQueryParameter("id", r)
+		id, ok := requesthelpers.GetQueryParameter("id", r)
 		if !ok {
-			link, ok := GetQueryParameterOrWriteErrorResponse("link", rw, r)
+			link, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("link", rw, r)
 			if !ok {
 				return
 			}
 			spotifyUrl, err := url.Parse(link)
 			if err != nil {
-				WriteJsonResponse(rw, 400,
-					models.CreateErrorPayload("link is not a valid url"))
+				requesthelpers.WriteJsonResponse(rw, 400,
+					requesthelpers.CreateErrorPayload("link is not a valid url"))
 			}
 			id = path.Base(spotifyUrl.Path)
 		}
@@ -85,27 +87,33 @@ func (s *Server) handlePlaylist() http.HandlerFunc {
 		case spotify.NotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case spotify.BadClientCredentials:
-			WriteJsonResponse(rw,
+			requesthelpers.WriteJsonResponse(rw,
 				http.StatusHTTPVersionNotSupported,
-				models.CreateErrorPayload("bad spotify client id or key"))
+				requesthelpers.CreateErrorPayload("bad spotify client id or key"))
 		case spotify.Ok:
-			WriteJsonResponse(rw, http.StatusOK, playlist)
+			requesthelpers.WriteJsonResponse(rw, http.StatusOK, playlist)
 		}
 	}
 }
 
 func (s *Server) handleDownloadStart() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		id, ok := GetQueryParameterOrWriteErrorResponse("id", rw, r)
-		if !ok {
-			return
+		var downloadRequest struct {
+			Id       string `json:"id" validate:"required"`
+			Folder   string `json:"folder" validate:"required,dir"`
+			Filename string `json:"filename" validate:"required"`
+
+			Title  string `json:"title"`
+			Artist string `json:"artist"`
+			Album  string `json:"album"`
 		}
-		filepath, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
-		if !ok {
+		json.NewDecoder(r.Body).Decode(&downloadRequest)
+
+		if !models.ValidateAndWriteResponse(rw, downloadRequest) {
 			return
 		}
 
-		youtubeLink, s2yStatus := s.SonglinkHelper.GetYoutubeLinkBySpotifyId(id)
+		youtubeLink, s2yStatus := s.SonglinkHelper.GetYoutubeLinkBySpotifyId(downloadRequest.Id)
 
 		switch s2yStatus {
 		case songlink.ErrorSendingRequest:
@@ -113,17 +121,17 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 		case songlink.TooManyRequests:
 			rw.WriteHeader(http.StatusTooManyRequests)
 		case songlink.NoSongWithSuchId:
-			WriteJsonResponse(rw,
+			requesthelpers.WriteJsonResponse(rw,
 				http.StatusBadRequest,
-				models.CreateErrorPayload(
-					fmt.Sprintf("No entry for song with id %s", id),
+				requesthelpers.CreateErrorPayload(
+					fmt.Sprintf("No entry for song with id %s", downloadRequest.Id),
 				),
 			)
 		case songlink.NoYoutubeLinkForSong:
-			WriteJsonResponse(rw,
+			requesthelpers.WriteJsonResponse(rw,
 				http.StatusNotFound,
-				models.CreateErrorPayload(
-					fmt.Sprintf("No YouTube link for song with id %s", id),
+				requesthelpers.CreateErrorPayload(
+					fmt.Sprintf("No YouTube link for song with id %s", downloadRequest.Id),
 				),
 			)
 		}
@@ -134,9 +142,9 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 
 		downloadLink, exists := clihelpers.GetYoutubeDownloadLink(youtubeLink)
 		if !exists {
-			WriteJsonResponse(rw,
+			requesthelpers.WriteJsonResponse(rw,
 				http.StatusNotFound,
-				models.CreateErrorPayload(
+				requesthelpers.CreateErrorPayload(
 					"No download link found for youtube link "+youtubeLink,
 				),
 			)
@@ -144,14 +152,21 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 		}
 
 		downloadStatus := s.DownloadHelper.StartDownload(
-			filepath,
-			downloadLink)
+			downloadRequest.Folder,
+			downloadRequest.Filename,
+			downloadLink,
+			clihelpers.FfmpegMetadata{
+				Title:  downloadRequest.Title,
+				Artist: downloadRequest.Artist,
+				Album:  downloadRequest.Album,
+			},
+			s.FeatureFfmpegInstalled)
 
 		switch downloadStatus {
 		case downloader.DStartErrorCreatingFile:
-			WriteJsonResponse(rw, 403,
-				models.CreateErrorPayload(
-					"could not create a file at "+filepath,
+			requesthelpers.WriteJsonResponse(rw, 403,
+				requesthelpers.CreateErrorPayload(
+					"could not create a file at "+filepath.Join(downloadRequest.Folder, downloadRequest.Filename),
 				),
 			)
 		case downloader.DStartErrorSendingRequest, downloader.DStartErrorReadingContentLength:
@@ -164,17 +179,21 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 
 func (s *Server) handleDownloadStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		folder, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("folder", rw, r)
+		if !ok {
+			return
+		}
+		filename, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("filename", rw, r)
 		if !ok {
 			return
 		}
 
-		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(path)
+		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(folder, filename)
 		switch responseStatus {
-		case downloader.DStatusFound:
+		case downloader.DStatusNotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case downloader.DStatusOk:
-			WriteJsonResponse(rw, http.StatusOK, downloadEntry)
+			requesthelpers.WriteJsonResponse(rw, http.StatusOK, downloadEntry)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
@@ -183,12 +202,16 @@ func (s *Server) handleDownloadStatus() http.HandlerFunc {
 
 func (s *Server) handleDownloadCancel() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		path, ok := GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		folder, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("folder", rw, r)
+		if !ok {
+			return
+		}
+		filename, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("filename", rw, r)
 		if !ok {
 			return
 		}
 
-		switch status := s.DownloadHelper.CancelDownload(path); status {
+		switch status := s.DownloadHelper.CancelDownload(folder, filename); status {
 		case downloader.DCancelNotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case downloader.DCancelNotInProgress:
@@ -211,7 +234,7 @@ func (s *Server) handleFeatures() http.HandlerFunc {
 			Ffmpeg:    s.FeatureFfmpegInstalled,
 		}
 
-		WriteJsonResponse(rw,
+		requesthelpers.WriteJsonResponse(rw,
 			http.StatusOK,
 			features)
 	}

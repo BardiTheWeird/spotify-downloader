@@ -3,7 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
-	"spotify-downloader/models"
+	"spotify-downloader/requesthelpers"
 	"time"
 )
 
@@ -26,9 +26,9 @@ func IsFeatureEnabled(feature *bool, featureName string) func(http.Handler) http
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			if !*feature {
-				WriteJsonResponse(rw,
+				requesthelpers.WriteJsonResponse(rw,
 					http.StatusServiceUnavailable,
-					models.CreateErrorPayload(
+					requesthelpers.CreateErrorPayload(
 						featureName+" is not available",
 					))
 				return

@@ -1,21 +1,14 @@
-package server
+package requesthelpers
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"spotify-downloader/models"
 )
 
 func SetContentTypeToJson(rw http.ResponseWriter) {
 	rw.Header().Add("Content-Type", "application/json")
 }
-
-// func WriteJsonResponse(rw http.ResponseWriter, statusCode int, payload []byte) {
-// 	SetContentTypeToJson(rw)
-// 	rw.WriteHeader(statusCode)
-// 	rw.Write(payload)
-// }
 
 func WriteJsonResponse(rw http.ResponseWriter, statusCode int, payload interface{}) {
 	bytes, _ := json.Marshal(payload)
@@ -35,7 +28,7 @@ func GetQueryParameterOrWriteErrorResponse(parameter string, rw http.ResponseWri
 		WriteJsonResponse(
 			rw,
 			400,
-			models.CreateErrorPayload(
+			CreateErrorPayload(
 				fmt.Sprintf("'%s' query parameter is missing", parameter)),
 		)
 	}

@@ -8,7 +8,6 @@ import (
 )
 
 func RunCliCommand(name string, params ...string) (string, string, error) {
-	// get the download link with the power of youtube-dl
 	cmd := exec.Command(name, params...)
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
@@ -28,4 +27,24 @@ func GetYoutubeDownloadLink(youtubeLink string) (string, bool) {
 	}
 
 	return strings.TrimSpace(link), exists
+}
+
+type FfmpegMetadata struct {
+	Title  string
+	Artist string
+	Album  string
+}
+
+func FfmpegConvert(filepathIn, filepathOut string, metadata FfmpegMetadata) error {
+	args := make([]string, 0, 10)
+	args = append(args, "-y", "-i", filepathIn)
+
+	args = append(args, "-metadata", "title="+metadata.Title)
+	args = append(args, "-metadata", "artist="+metadata.Artist)
+	args = append(args, "-metadata", "album="+metadata.Album)
+
+	args = append(args, filepathOut)
+	_, _, err := RunCliCommand("ffmpeg", args...)
+
+	return err
 }

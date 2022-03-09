@@ -40,8 +40,6 @@ type Track = {
 Is sent as a response when getting a status of a download
 ```
 type DownloadEntry = {
-	path: string,
-	youtube_link: string,
 	total_bytes: int,
 	downloaded_bytes: int,
 	status: DownloadStatus
@@ -49,6 +47,7 @@ type DownloadEntry = {
 
 enum DownloadStatus = {
 	DownloadInProgress,
+	DownloadConvertationInProgress,
 	DownloadFinished,
 	DownloadFailed,
 	DownloadedCancelled
@@ -67,7 +66,6 @@ Everything starts with /api/v1
 		- 429 => too many requests
 		- 500
 - `POST /spotify/configure`
-	- Configure Spotify with Client Id and Client Secret
 	- Request Body:
 	```
 	type SpotifyClientConfiguration {
@@ -75,13 +73,27 @@ Everything starts with /api/v1
 		client_secret: string
 	}
 	```
+	- Configure Spotify with Client Id and Client Secret
 	- Status codes:
 		- 204
 		- 400 + error payload:
 			- 0 => client id or client secret not provided
 			- 400 => bad credentials
-- `POST /download/start?id={spotify_song_id}&path={host_path}`
-	- Starts a download on a host machine
+- `POST /download/start`
+	- Request Body:
+	```
+	type DownloadRequest {
+		id: string,
+		folder: string,
+		filename: string,
+		
+		title: string,
+		artist: string,
+		album: string
+	}
+	```
+	- Starts a download on a host machine at `folder_path/file_name`
+		- If ffmpeg is detected, it also converts the downloaded file to .mp3 with provided metadata
 	- Status codes:
 		- 204
 		- 400 => no songlink entry for song with such id (most likely, the id sent was wrong)
@@ -91,15 +103,15 @@ Everything starts with /api/v1
 			- no download link for youtube link (youtube api and/or youtube-dl weirdness)
 		- 429 => songlink too many requests
 		- 500 => songlink/download error sending request
-- `GET /download/status?path={host_path}`
-	- Returns a DownloadEntry of download at {path}
+- `GET /download/status?folder={folder_path}&filename={file_name}`
+	- Returns a DownloadEntry of download at `folder_path/file_name`
 	- Status codes:
 		- 200
 		- 400 + payload error => path not provided
 		- 404 => no download at {path}
 		- 500 => can't stat file OR unhandled GetDownloadStatusStatus
-- `POST /download/cancel?path={host_path}`
-	- Cancels a download at {path}
+- `POST /download/cancel?folder={folder_path}&filename={file_name}`
+	- Cancels a download at `folder_path/file_name`
 	- Status codes:
 		- 204
 		- 400 + payload error => path not provided
@@ -110,7 +122,7 @@ Everything starts with /api/v1
 - `GET /features`
 	- Returns available/installed features
 	- Status code 200
-	- Model:
+	- Response Body:
 	```
 	type FeaturesAvailable{
 		youtube_dl: bool,
