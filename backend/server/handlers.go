@@ -106,6 +106,7 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 			Title  string `json:"title"`
 			Artist string `json:"artist"`
 			Album  string `json:"album"`
+			Image  string `json:"image"`
 		}
 		json.NewDecoder(r.Body).Decode(&downloadRequest)
 

@@ -95,8 +95,9 @@ export function PlaylistTable({playlist, downloadPath}) {
                   folder: downloadPath,
                   filename: `${track.artists} - ${track.title}`,
                   title: track.title,
-                  artist: track.artists,
-                  album: track.album
+                  artist: track.artists.join(' '),
+                  album: track.album_title,
+                  image: track.album_image
                 })
               });
               console.log(downloadResponse);

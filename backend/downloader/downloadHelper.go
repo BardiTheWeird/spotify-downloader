@@ -98,6 +98,8 @@ func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, met
 				}
 			}
 
+			out.Close()
+
 			switch {
 			case cancelled:
 				log.Println("download at", filepathNoExt, "was cancelled")

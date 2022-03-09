@@ -89,7 +89,8 @@ Everything starts with /api/v1
 		
 		title: string,
 		artist: string,
-		album: string
+		album: string,
+		image: string
 	}
 	```
 	- Starts a download on a host machine at `folder_path/file_name`
