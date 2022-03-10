@@ -110,13 +110,12 @@ export function PlaylistTable({playlist, downloadPath}) {
       });
       switch (downloadResponse.status) {
         case 204:
+          UpdateDownloadStatus(index);
           if (!isDownloading.current) {
             CancelDownload(index);
-            track.status = 'Cancelled';
           }
           else {
             track.status = 'Downloading';
-            UpdateDownloadStatus(index);
           }
           break;
         case 400:
@@ -172,7 +171,9 @@ export function PlaylistTable({playlist, downloadPath}) {
         updateTracks(copiedTracks);
         // sleep 1s
         await new Promise(r => setTimeout(r, 1000));
-        if (downloadEntry.status >= 2) {break}
+        if (downloadEntry.status >= 2) {
+          break;
+        }
       }
   }
 
