@@ -133,18 +133,23 @@ export function PlaylistTable({playlist, downloadPath}) {
         const getStatusResponse = await fetch(`http://localhost:8080/api/v1/download/status?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`);
         const downloadEntry = await getStatusResponse.json();
 
-        if (downloadEntry.status == 0) {
-          const percentage = Math.floor(downloadEntry.downloaded_bytes/downloadEntry.total_bytes*100);
-          copiedTracks[trackIndex].status = `Donwloading ${percentage}%`
-        }
-        else if (downloadEntry.status == 1) {
-          copiedTracks[trackIndex].status = 'Converting'
-        }
-        else if (downloadEntry.status == 2) {
-          copiedTracks[trackIndex].status = 'Completed'
-        }
-        else if (downloadEntry.status == 3) {
-          copiedTracks[trackIndex].status = 'Failed'
+        switch (downloadEntry.status) {
+          case 0: 
+            const percentage = Math.floor(downloadEntry.downloaded_bytes/downloadEntry.total_bytes*100);
+            copiedTracks[trackIndex].status = `Downloading ${percentage}%`;
+            break;
+          case 1: 
+            copiedTracks[trackIndex].status = 'Converting'
+            break;
+          case 2: 
+            copiedTracks[trackIndex].status = 'Completed'
+            break;
+          case 3: 
+            copiedTracks[trackIndex].status = 'Failed'
+            break;
+          case 4: 
+            copiedTracks[trackIndex].status = 'Cancelled'
+            break;
         }
         updateTracks(copiedTracks);
         // sleep 1s
