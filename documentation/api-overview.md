@@ -93,7 +93,7 @@ Everything starts with /api/v1
 ```
 	type DownloadEntry = {
 		total_bytes: int,
-		downloaded_bytes: int,
+		downloaded_bytes: int?,
 		status: DownloadStatus
 	}
 	
@@ -101,6 +101,7 @@ Everything starts with /api/v1
 		DownloadInProgress,
 		DownloadConvertationInProgress,
 		DownloadFinished,
+		DownloadErrorConverting,
 		DownloadFailed,
 		DownloadedCancelled
 	}

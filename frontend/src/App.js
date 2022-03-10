@@ -61,7 +61,8 @@ export function InputBar() {
 export default App;
 
 export function PlaylistTable({playlist, downloadPath}) {
-  const [isDownloading, updateIsDownloading] = React.useState(false);
+  // const [isDownloading, updateIsDownloading] = React.useState(false);
+  const isDownloading = React.useRef(false);
   const [tracks, updateTracks] = React.useState(playlist.tracks.map(track => {
     return {...track,
       checked: true,
@@ -77,6 +78,15 @@ export function PlaylistTable({playlist, downloadPath}) {
   }))}, [playlist]);
 
   function DownloadSelected() {
+    // set pending status
+    tracks.forEach(track => { 
+      if (track.checked) {
+        track.status = 'Pending'
+      }
+    })
+    updateTracks(tracks);
+
+    // start download
     tracks.forEach(async (track, index) => {
       if (!track.checked) {
         return;
@@ -98,26 +108,29 @@ export function PlaylistTable({playlist, downloadPath}) {
           image: track.album_image
         })
       });
-      console.log(downloadResponse);
-      if (downloadResponse.status == 404) {
-        track.status = "Not Available";
+      switch (downloadResponse.status) {
+        case 204:
+          if (!isDownloading.current) {
+            CancelDownload(index);
+            track.status = 'Cancelled';
+          }
+          else {
+            track.status = 'Downloading';
+            UpdateDownloadStatus(index);
+          }
+          break;
+        case 400:
+          track.status = "Not Available";
+          break;
+        case 403:
+          track.status = "Invalid path";
+          break;
+        case 500:
+          track.status = "Download Error";
+          break;           
       }
-      else if (downloadResponse.status == 400) {
-        track.status = "Wrong Song ID";
-      }
-      else if (downloadResponse.status == 403) {
-        track.status = "Invalid path";
-      }
-      else if (downloadResponse.status == 500) {
-        track.status = "Download Error";
-      }
-      else if (downloadResponse.status == 204) {
-        track.status = 'Downloading';
-        UpdateDownloadStatus(index);
-      }
-
+      
       const copiedTracks = [...tracks];
-      // copiedTracks[index] = {...track};
       updateTracks(copiedTracks);
     })
   }
@@ -134,6 +147,7 @@ export function PlaylistTable({playlist, downloadPath}) {
         const getStatusResponse = await fetch(`http://localhost:8080/api/v1/download/status?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`);
         const downloadEntry = await getStatusResponse.json();
 
+        console.log(downloadEntry);
         switch (downloadEntry.status) {
           case 0: 
             const percentage = Math.floor(downloadEntry.downloaded_bytes/downloadEntry.total_bytes*100);
@@ -146,24 +160,41 @@ export function PlaylistTable({playlist, downloadPath}) {
             copiedTracks[trackIndex].status = 'Completed'
             break;
           case 3: 
-            copiedTracks[trackIndex].status = 'Failed'
+            copiedTracks[trackIndex].status = 'Convertation Failed'
             break;
           case 4: 
+            copiedTracks[trackIndex].status = 'Failed'
+            break;
+          case 5: 
             copiedTracks[trackIndex].status = 'Cancelled'
             break;
         }
         updateTracks(copiedTracks);
         // sleep 1s
         await new Promise(r => setTimeout(r, 1000));
-        if (downloadEntry.status == 2) {break}
+        if (downloadEntry.status >= 2) {break}
       }
   }
 
   function SwitchIsDownloading () {
-    updateIsDownloading(!isDownloading)
+    isDownloading.current = !isDownloading.current;
   }
 
-  function CancelDownload() {}
+  async function CancelDownload(trackIndex) {
+    const copiedTracks = [...tracks];
+    const track = copiedTracks[trackIndex];
+    if (!track.checked) {
+      return;
+    }
+    let downloadFolder = downloadPath;
+    if (!downloadFolder) {
+      downloadFolder = "./userDownloads/"
+    }
+    let url = `http://localhost:8080/api/v1/download/cancel?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`;
+    let downloadResponse = await fetch(url, {
+      method: 'POST',
+    })
+  }
 
   return (
     <>
@@ -173,15 +204,15 @@ export function PlaylistTable({playlist, downloadPath}) {
             DownloadSelected();
           }
         }
-        disabled={isDownloading}
+        disabled={isDownloading.current}
         >Download selected
         </button>
         <button className='CancelDownloadButton' onClick={() => {
             SwitchIsDownloading();
-            CancelDownload();
+            tracks.forEach((track, id) => CancelDownload(id))
           }
         }
-          disabled={!isDownloading}>Cancel Download</button>
+          disabled={!isDownloading.current}>Cancel Download</button>
       </div>
       
       <table className='Table'>
@@ -198,7 +229,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                     updateTracks(copiedTracks);
                   }
                 }
-              disabled={isDownloading}
+              disabled={isDownloading.current}
               />
           </th>
           <th>All</th>
@@ -218,7 +249,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                     updateTracks(clonedTracks);
                   }
                 }
-                disabled={isDownloading}
+                disabled={isDownloading.current}
                 /></td>
                 <td><img src={track.album_image}
                 height="30" px/>
