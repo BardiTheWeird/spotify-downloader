@@ -198,6 +198,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                     updateTracks(copiedTracks);
                   }
                 }
+              disabled={isDownloading}
               />
           </th>
           <th>All</th>
@@ -216,7 +217,9 @@ export function PlaylistTable({playlist, downloadPath}) {
                     clonedTracks[index].checked = !clonedTracks[index].checked;
                     updateTracks(clonedTracks);
                   }
-                }/></td>
+                }
+                disabled={isDownloading}
+                /></td>
                 <td><img src={track.album_image}
                 height="30" px/>
                 </td>
