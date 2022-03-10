@@ -36,23 +36,6 @@ type Track = {
 	preview_url: string
 }
 ```
-## DownloadEntry
-Is sent as a response when getting a status of a download
-```
-type DownloadEntry = {
-	total_bytes: int,
-	downloaded_bytes: int,
-	status: DownloadStatus
-}
-
-enum DownloadStatus = {
-	DownloadInProgress,
-	DownloadConvertationInProgress,
-	DownloadFinished,
-	DownloadFailed,
-	DownloadedCancelled
-}
-```
 # Endpoints
 Everything starts with /api/v1
 - `GET /spotify/playlist?id={spotify_playlist_id}`
@@ -106,6 +89,22 @@ Everything starts with /api/v1
 		- 500 => songlink/download error sending request
 - `GET /download/status?folder={folder_path}&filename={file_name}`
 	- Returns a DownloadEntry of download at `folder_path/file_name`
+	- Response Model:
+```
+	type DownloadEntry = {
+		total_bytes: int,
+		downloaded_bytes: int,
+		status: DownloadStatus
+	}
+	
+	enum DownloadStatus = {
+		DownloadInProgress,
+		DownloadConvertationInProgress,
+		DownloadFinished,
+		DownloadFailed,
+		DownloadedCancelled
+	}
+```
 	- Status codes:
 		- 200
 		- 400 + payload error => path not provided
