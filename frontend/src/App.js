@@ -111,13 +111,46 @@ export function PlaylistTable({playlist, downloadPath}) {
         track.status = "Download Error";
       }
       else if (downloadResponse.status == 204) {
-        track.status = "Downloading";
+        track.status = 'Downloading';
+        UpdateDownloadStatus(index);
       }
 
       const copiedTracks = [...tracks];
       // copiedTracks[index] = {...track};
       updateTracks(copiedTracks);
     })
+  }
+
+    async function UpdateDownloadStatus(trackIndex) {
+      while (true) {
+        const copiedTracks = [...tracks];
+        const track = copiedTracks[trackIndex];
+
+        let downloadFolder = downloadPath;
+        if (!downloadFolder) {
+          downloadFolder = "./userDownloads/"
+        }
+        const getStatusResponse = await fetch(`http://localhost:8080/api/v1/download/status?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`);
+        const downloadEntry = await getStatusResponse.json();
+
+        if (downloadEntry.status == 0) {
+          const percentage = Math.floor(downloadEntry.downloaded_bytes/downloadEntry.total_bytes*100);
+          copiedTracks[trackIndex].status = `Donwloading ${percentage}%`
+        }
+        else if (downloadEntry.status == 1) {
+          copiedTracks[trackIndex].status = 'Converting'
+        }
+        else if (downloadEntry.status == 2) {
+          copiedTracks[trackIndex].status = 'Completed'
+        }
+        else if (downloadEntry.status == 3) {
+          copiedTracks[trackIndex].status = 'Failed'
+        }
+        updateTracks(copiedTracks);
+        // sleep 1s
+        await new Promise(r => setTimeout(r, 1000));
+        if (downloadEntry.status == 2) {break}
+      }
   }
 
   return (
