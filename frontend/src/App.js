@@ -61,13 +61,14 @@ export function InputBar() {
 export default App;
 
 export function PlaylistTable({playlist, downloadPath}) {
+  const [isDownloading, updateIsDownloading] = React.useState(false);
   const [tracks, updateTracks] = React.useState(playlist.tracks.map(track => {
     return {...track,
       checked: true,
       status: "NA"
     };
   }));
-  // WTF IS THIS AND WHY DOES IT WORK
+
   React.useEffect(() => {updateTracks(playlist.tracks.map(track => {
     return {...track,
       checked: true,
@@ -121,7 +122,7 @@ export function PlaylistTable({playlist, downloadPath}) {
     })
   }
 
-    async function UpdateDownloadStatus(trackIndex) {
+  async function UpdateDownloadStatus(trackIndex) {
       while (true) {
         const copiedTracks = [...tracks];
         const track = copiedTracks[trackIndex];
@@ -158,13 +159,29 @@ export function PlaylistTable({playlist, downloadPath}) {
       }
   }
 
+  function SwitchIsDownloading () {
+    updateIsDownloading(!isDownloading)
+  }
+
+  function CancelDownload() {}
+
   return (
     <>
       <div className='inline-buttons'>
-        <button className='DownloadButton' onClick={DownloadSelected}
+        <button className='DownloadButton' onClick={() => {
+            SwitchIsDownloading();
+            DownloadSelected();
+          }
+        }
+        disabled={isDownloading}
         >Download selected
         </button>
-        <button className='CancelDownloadButton' disabled={true}>Cancel Download</button>
+        <button className='CancelDownloadButton' onClick={() => {
+            SwitchIsDownloading();
+            CancelDownload();
+          }
+        }
+          disabled={!isDownloading}>Cancel Download</button>
       </div>
       
       <table className='Table'>
