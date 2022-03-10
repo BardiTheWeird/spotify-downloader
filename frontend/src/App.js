@@ -5,6 +5,11 @@ import React from 'react';
 export function App() {
   return (
     <div className="App">
+      <div className='App-header-info'>Light/Dark</div>
+      <label class="switch">
+        <input type="checkbox"></input>
+        <span class="slider round"></span>
+      </label>
       <header className="App-header">
         <div>Please make sure you installed</div>
         <a href='https://youtube-dl.org' className="App-link">"YOUTUBE downloader"</a>
