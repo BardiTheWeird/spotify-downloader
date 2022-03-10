@@ -75,35 +75,55 @@ export function PlaylistTable({playlist, downloadPath}) {
     };
   }))}, [playlist]);
 
+  function DownloadSelected() {
+    tracks.forEach(async (track, index) => {
+      if (!track.checked) {
+        return;
+      }
+      let url = 'http://localhost:8080/api/v1/download/start';
+      let downloadFolder = downloadPath;
+      if (!downloadFolder) {
+        downloadFolder = "./userDownloads/"
+      }
+      let downloadResponse = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          id: track.id,
+          folder: downloadPath,
+          filename: `${track.artists} - ${track.title}`,
+          title: track.title,
+          artist: track.artists.join(' '),
+          album: track.album_title,
+          image: track.album_image
+        })
+      });
+      console.log(downloadResponse);
+      if (downloadResponse.status == 404) {
+        track.status = "Not Available";
+      }
+      else if (downloadResponse.status == 400) {
+        track.status = "Wrong Song ID";
+      }
+      else if (downloadResponse.status == 403) {
+        track.status = "Invalid path";
+      }
+      else if (downloadResponse.status == 500) {
+        track.status = "Download Error";
+      }
+      else if (downloadResponse.status == 204) {
+        track.status = "Downloading";
+      }
+
+      const copiedTracks = [...tracks];
+      // copiedTracks[index] = {...track};
+      updateTracks(copiedTracks);
+    })
+  }
+
   return (
     <>
       <div className='inline-buttons'>
-        <button className='DownloadButton' onClick={() => {
-            tracks.forEach(async (track, index) => {
-              if (!track.checked) {
-                return;
-              }
-              let url = 'http://localhost:8080/api/v1/download/start';
-              let downloadFolder = downloadPath;
-              if (!downloadFolder) {
-                downloadFolder = "./userDownloads/"
-              }
-              let downloadResponse = await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify({
-                  id: track.id,
-                  folder: downloadPath,
-                  filename: `${track.artists} - ${track.title}`,
-                  title: track.title,
-                  artist: track.artists.join(' '),
-                  album: track.album_title,
-                  image: track.album_image
-                })
-              });
-              console.log(downloadResponse);
-            })
-          }
-        }
+        <button className='DownloadButton' onClick={DownloadSelected}
         >Download selected
         </button>
         <button className='CancelDownloadButton' disabled={true}>Cancel Download</button>
