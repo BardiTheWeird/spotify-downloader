@@ -160,6 +160,7 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 				Title:  downloadRequest.Title,
 				Artist: downloadRequest.Artist,
 				Album:  downloadRequest.Album,
+				Image:  downloadRequest.Image,
 			},
 			s.FeatureFfmpegInstalled)
 
