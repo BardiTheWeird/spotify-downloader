@@ -127,7 +127,7 @@ export function PlaylistTable({playlist, downloadPath}) {
         case 400:
           track.status = "Not Available";
           break;
-        case 403:
+        case 404:
           track.status = "Invalid path";
           break;
         case 500:
