@@ -7,6 +7,7 @@ export function App() {
     <div className="App">
       <div className='App-header-info'>Light/Dark</div>
       <label class="switch">
+        
         <input type="checkbox"></input>
         <span class="slider round"></span>
       </label>
