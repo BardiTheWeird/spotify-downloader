@@ -33,11 +33,19 @@ type FfmpegMetadata struct {
 	Title  string
 	Artist string
 	Album  string
+	Image  string
 }
 
 func FfmpegConvert(filepathIn, filepathOut string, metadata FfmpegMetadata) error {
 	args := make([]string, 0, 10)
 	args = append(args, "-y", "-i", filepathIn)
+
+	if len(metadata.Image) > 0 {
+		args = append(args, "-i", metadata.Image)
+		args = append(args, "-map", "0:0", "-map", "1:0")
+	}
+
+	args = append(args, "-id3v2_version", "3")
 
 	args = append(args, "-metadata", "title="+metadata.Title)
 	args = append(args, "-metadata", "artist="+metadata.Artist)
