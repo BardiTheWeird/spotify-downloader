@@ -52,7 +52,12 @@ func FfmpegConvert(filepathIn, filepathOut string, metadata FfmpegMetadata) erro
 	args = append(args, "-metadata", "album="+metadata.Album)
 
 	args = append(args, filepathOut)
-	_, _, err := RunCliCommand("ffmpeg", args...)
+	stdout, stderr, err := RunCliCommand("ffmpeg", args...)
+	if err != nil {
+		log.Println("error converting", filepathIn, "to", filepathOut)
+		log.Println("stdout:", stdout)
+		log.Println("stderr:", stderr)
+	}
 
 	return err
 }
