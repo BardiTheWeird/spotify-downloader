@@ -78,8 +78,10 @@ export function InputBar() {
 export default App;
 
 export function PlaylistTable({playlist, downloadPath}) {
-  // const [isDownloading, updateIsDownloading] = React.useState(false);
+  // a workaround for forcing a rerender
+  const [, setForceUpdate] = React.useState(Date.now());
   const isDownloading = React.useRef(false);
+  const downloadCounter = React.useRef(0);
   const [tracks, updateTracks] = React.useState(playlist.tracks.map(track => {
     return {...track,
       checked: true,
@@ -99,6 +101,7 @@ export function PlaylistTable({playlist, downloadPath}) {
     tracks.forEach(track => { 
       if (track.checked) {
         track.status = 'Pending'
+        downloadCounter.current++;
       }
     })
     updateTracks(tracks);
@@ -125,6 +128,14 @@ export function PlaylistTable({playlist, downloadPath}) {
           image: track.album_image
         })
       });
+      if (downloadResponse.status !== 204) {
+        downloadCounter.current--;
+        if (downloadCounter.current == 0) {
+          isDownloading.current = false;
+          console.log("finished downloading");
+          setForceUpdate(Date.now());
+        }
+      }
       switch (downloadResponse.status) {
         case 204:
           UpdateDownloadStatus(index);
@@ -166,7 +177,6 @@ export function PlaylistTable({playlist, downloadPath}) {
         const getStatusResponse = await fetch(`http://localhost:8080/api/v1/download/status?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`);
         const downloadEntry = await getStatusResponse.json();
 
-        console.log(downloadEntry);
         switch (downloadEntry.status) {
           case 0: 
             const percentage = Math.floor(downloadEntry.downloaded_bytes/downloadEntry.total_bytes*100);
@@ -189,9 +199,19 @@ export function PlaylistTable({playlist, downloadPath}) {
             break;
         }
         updateTracks(copiedTracks);
+        // if (SwitchButtonAfterDownload() === downloadEntry.length) {
+        //   isDownloading.current = !isDownloading.current
+        // }
         // sleep 1s
         await new Promise(r => setTimeout(r, 1000));
         if (downloadEntry.status >= 2) {
+          downloadCounter.current--;
+          if (downloadCounter.current == 0) {
+            isDownloading.current = false;
+            console.log("finished downloading");
+            setForceUpdate(Date.now());
+          }
+          console.log(downloadCounter.current)
           break;
         }
       }
