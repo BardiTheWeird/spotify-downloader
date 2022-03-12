@@ -22,9 +22,6 @@ export function App() {
         <span class="slider round"></span>
       </label>
       <header className="App-header">
-        {/* <div>Please make sure you installed</div>
-        <a href='https://youtube-dl.org' className="App-link">"YOUTUBE downloader"</a> */}
-        {/* <div>Prior to beginning the search</div> */}
         <div>Enter Spotify Playlist Or Album URL:</div>
       </header>
       <header>

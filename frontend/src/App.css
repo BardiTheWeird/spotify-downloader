@@ -21,19 +21,36 @@
 }
 
 .Dark {
-  /* display: flex; */
-  /* margin-left: auto; */
-  /* margin-right: auto; */
-  color: white;
+  color: gainsboro;
   background-color: #282c34;
 }
 
+.Dark input[type="text"], textarea {
+  background-color: #1f2125;
+  color: gainsboro;
+}
+
+.Dark input::placeholder {
+  color: rgb(177, 175, 175);
+}
+
+.Dark input[type="text"]:-internal-autofill-selected, textarea {
+  -webkit-box-shadow: #1f2125 !important;
+  background-color: #1f2125 !important;
+  color: #1f2125 !important;
+}
+
 .Light {
-  /* display: flex; */
-  /* margin-left: auto; */
-  /* margin-right: auto; */
   color: darkblue;
   background-color: gainsboro;
+}
+
+.Light input[type="text"], textarea {
+  background-color: rgb(235, 235, 235);
+}
+
+.Light input::placeholder {
+  color: rgb(119, 119, 192);
 }
 
 .App-header {
@@ -42,7 +59,6 @@
   align-items: center;
   justify-content: flex-start;
   font-size: calc(10px + 2vmin);
-  /* color: white; */
 }
 
 .App-header-info {
@@ -51,7 +67,6 @@
   align-items: center;
   justify-content: flex-start;
   font-size: calc(10px + 2vmin)/2;
-  /* color: white; */
 }
 
 .App-link {
@@ -178,11 +193,11 @@
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: #343942;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 1px #343942;
 }
 
 input:checked + .slider:before {
