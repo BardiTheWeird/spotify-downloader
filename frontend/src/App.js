@@ -25,7 +25,7 @@ export function App() {
         {/* <div>Please make sure you installed</div>
         <a href='https://youtube-dl.org' className="App-link">"YOUTUBE downloader"</a> */}
         {/* <div>Prior to beginning the search</div> */}
-        <div>Enter Spotify Playlist URL:</div>
+        <div>Enter Spotify Playlist Or Album URL:</div>
       </header>
       <header>
       <div className='App-header-info'>If directory is not defined PL will be loaded into "userDownloads" folder</div>
