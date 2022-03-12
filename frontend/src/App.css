@@ -1,10 +1,12 @@
 #root {
-  background-color: #282c34;
-  min-height: 100vh;
+  /* background-color: #282c34; */
+  /* min-height: 100vh; */
 }
 
 .App {
   text-align: center;
+  color: white;
+  min-height: 100vh;
 }
 
 .App-logo {
@@ -18,13 +20,29 @@
   }
 }
 
+.Dark {
+  /* display: flex; */
+  /* margin-left: auto; */
+  /* margin-right: auto; */
+  color: white;
+  background-color: #282c34;
+}
+
+.Light {
+  /* display: flex; */
+  /* margin-left: auto; */
+  /* margin-right: auto; */
+  color: darkblue;
+  background-color: gainsboro;
+}
+
 .App-header {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   font-size: calc(10px + 2vmin);
-  color: white;
+  /* color: white; */
 }
 
 .App-header-info {
@@ -33,7 +51,7 @@
   align-items: center;
   justify-content: flex-start;
   font-size: calc(10px + 2vmin)/2;
-  color: white;
+  /* color: white; */
 }
 
 .App-link {
@@ -66,7 +84,7 @@
 
 .Table {
   font-size: 14px;
-  color: white;
+  /* color: white; */
   border-color: darkgray;
   border: 2px;
   margin-left: auto;

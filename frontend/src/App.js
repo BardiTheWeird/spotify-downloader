@@ -2,24 +2,35 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 
+
 export function App() {
+  const [isLight, updateisLight] = React.useState(true);
+  function LightDark() {
+    
+    if (!isLight) {
+      return "Light"
+    }
+    else {
+      return "Dark"
+    }
+  }
   return (
-    <div className="App">
-      <div className='App-header-info'>Light/Dark</div>
+    <div className={`App ${LightDark()}`}>
+      <div  className='App-header-info'>Light/Dark</div>
       <label class="switch">
-        
-        <input type="checkbox"></input>
+        <input type="checkbox" onChange={e => updateisLight(!isLight)}></input>
         <span class="slider round"></span>
       </label>
       <header className="App-header">
-        <div>Please make sure you installed</div>
-        <a href='https://youtube-dl.org' className="App-link">"YOUTUBE downloader"</a>
-        <div>Prior to beginning the search</div>
+        {/* <div>Please make sure you installed</div>
+        <a href='https://youtube-dl.org' className="App-link">"YOUTUBE downloader"</a> */}
+        {/* <div>Prior to beginning the search</div> */}
         <div>Enter Spotify Playlist URL:</div>
       </header>
       <header>
       <div className='App-header-info'>If directory is not defined PL will be loaded into "userDownloads" folder</div>
       </header>
+      <InputBar />
     </div>
     
   );

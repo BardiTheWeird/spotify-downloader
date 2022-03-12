@@ -6,7 +6,6 @@ import {App, InputBar, playlistTable} from './App';
 ReactDOM.render(
   <React.StrictMode>
     <App />
-    <InputBar />
   </React.StrictMode>,
   document.getElementById('root')
 );
