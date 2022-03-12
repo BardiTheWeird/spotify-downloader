@@ -51,13 +51,15 @@ func FfmpegConvert(filepathIn, filepathOut string, metadata FfmpegMetadata) erro
 	if len(metadata.Image) > 0 {
 		args = append(args, "-i", metadata.Image)
 		args = append(args, "-map", "0:0", "-map", "1:0")
+		args = append(args, "-metadata:s:v", "title=Album cover")
+		args = append(args, "-metadata:s:v", "comment=Cover (Front)")
 	}
 
 	args = append(args, "-id3v2_version", "3")
 
-	args = append(args, "-metadata", "title="+metadata.Title)
-	args = append(args, "-metadata", "artist="+metadata.Artist)
-	args = append(args, "-metadata", "album="+metadata.Album)
+	args = append(args, "-metadata:s:a", "title="+metadata.Title)
+	args = append(args, "-metadata:s:a", "artist="+metadata.Artist)
+	args = append(args, "-metadata:s:a", "album="+metadata.Album)
 
 	args = append(args, filepathOut)
 
