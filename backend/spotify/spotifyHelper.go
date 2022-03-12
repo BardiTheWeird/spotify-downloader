@@ -76,8 +76,8 @@ const (
 	UnexpectedResponseStatus
 )
 
-func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylistResponseStatus) {
-	req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/playlists/"+id, nil)
+func (s *SpotifyHelper) GetPlaylistById(id, linkType string) (models.Playlist, GetPlaylistResponseStatus) {
+	req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/"+linkType+"/"+id, nil)
 	req.Header.Add("Content-Type", "application/json")
 	if !s.UseClientAuthentication(req) {
 		return models.Playlist{}, BadClientCredentials
@@ -101,9 +101,21 @@ func (s *SpotifyHelper) GetPlaylistById(id string) (models.Playlist, GetPlaylist
 	case 429:
 		return models.Playlist{}, ExceededRateLimits
 	case 200:
-		var playlist playlist
-		json.NewDecoder(response.Body).Decode(&playlist)
-		return playlist.toModelsPlaylist(), Ok
+		var modelsPlaylist models.Playlist
+		switch linkType {
+		case "playlists":
+			var playlist playlistTracks
+			json.NewDecoder(response.Body).Decode(&playlist)
+			modelsPlaylist = toModelsPlaylist(playlist.toTracks())
+		case "albums":
+			var album albumTracks
+			json.NewDecoder(response.Body).Decode(&album)
+			modelsPlaylist = toModelsPlaylist(album.toTracks())
+		default:
+			return models.Playlist{}, NotFound
+		}
+		return modelsPlaylist, Ok
+
 	default:
 		log.Printf("Response status %d was not expected\n", response.StatusCode)
 

@@ -12,17 +12,7 @@ Stripped-down Spotify Playlist type
 ```
 type Playlist = {
 	id: string,
-	name: string,
-	owner: PlaylistOwner,
-	href: string,
-	image: string,
 	tracks: Track[]	
-}
-
-type PlaylistOwner = {
-	id: string,
-	display_name: string,
-	href: string
 }
 
 type Track = {
@@ -31,9 +21,6 @@ type Track = {
 	artists: string[],
 	album_title: string,
 	album_image: string,
-	album_href: string,
-	href: string,
-	preview_url: string
 }
 ```
 # Endpoints

@@ -14,6 +14,7 @@ import (
 	"spotify-downloader/requesthelpers"
 	"spotify-downloader/songlink"
 	"spotify-downloader/spotify"
+	"strings"
 )
 
 func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
@@ -61,6 +62,7 @@ func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
 
 func (s *Server) handlePlaylist() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
+		linkType := "playlist"
 		id, ok := requesthelpers.GetQueryParameter("id", r)
 		if !ok {
 			link, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("link", rw, r)
@@ -72,10 +74,19 @@ func (s *Server) handlePlaylist() http.HandlerFunc {
 				requesthelpers.WriteJsonResponse(rw, 400,
 					requesthelpers.CreateErrorPayload("link is not a valid url"))
 			}
+			splitPath := strings.Split(spotifyUrl.Path, "/")
+			if len(splitPath) < 3 {
+				requesthelpers.WriteJsonResponse(rw, 400,
+					requesthelpers.CreateErrorPayload("Invalid Spotify link"))
+				return
+			}
+			// the path is supposed to be /{playlist/album}/{id}
+			linkType = splitPath[1]
+			fmt.Println("link type:", linkType)
 			id = path.Base(spotifyUrl.Path)
 		}
 
-		playlist, status := s.SpotifyHelper.GetPlaylistById(id)
+		playlist, status := s.SpotifyHelper.GetPlaylistById(id, linkType+"s")
 
 		switch status {
 		case spotify.ErrorSendingRequest, spotify.UnexpectedResponseStatus:
