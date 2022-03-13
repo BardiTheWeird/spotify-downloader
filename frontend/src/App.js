@@ -2,24 +2,38 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 
+export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 
 export function App() {
-  const [isLight, updateisLight] = React.useState(true);
+  const [isDark, updateisDark] = 
+    React.useState(isDarkInitialValue);
+  console.log("isDark =", isDark);
+  React.useEffect(() => {
+    localStorage.setItem("DarkMode", isDark.toString())
+    console.log("updated DarkMode to", localStorage.getItem("DarkMode"));
+  }, [isDark]);
+
   function LightDark() {
-    
-    if (!isLight) {
-      return "Light"
+    console.log('LighDark:')
+    console.log('  isDark =', isDark);
+    let returnVal;
+    if (isDark === true) {
+      console.log("  it's fucking dark");
+      returnVal = "Dark";
     }
     else {
-      return "Dark"
+      console.log("  it's bloody light");
+      returnVal = "Light";
     }
+    console.log("  returnVal =", returnVal);
+    return returnVal;
   }
   return (
     <div className={`App ${LightDark()}`}>
       <div  className='App-header-info'>Light/Dark</div>
-      <label class="switch">
-        <input type="checkbox" onChange={e => updateisLight(!isLight)}></input>
-        <span class="slider round"></span>
+      <label className="switch">
+        <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
+        <span className="slider round"></span>
       </label>
       <header className="App-header">
         <div>Enter Spotify Playlist Or Album URL:</div>
@@ -51,15 +65,15 @@ export function InputBar() {
       <div className="Bar">
         <div>
           <div className="SearchBar">
-            <form onSubmit={submitPlaylistLink} class="inputForm">
-              <input placeholder='Spotify Playlist Link' type="text" name='PL-URL' required class="inputForm" onChange={
+            <form onSubmit={submitPlaylistLink} className="inputForm">
+              <input placeholder='Spotify Playlist Link' type="text" name='PL-URL' required className="inputForm" onChange={
                 e => updateFormData(e.target.value.trim())}/>
               <input type="submit" value="Submit"/>
             </form>
           </div>
           <div className="SearchBar">
-            <form class="inputForm">
-              <input placeholder='Download Directory' type="text" name='DL-path' required class="inputForm" onChange={
+            <form className="inputForm">
+              <input placeholder='Download Directory' type="text" name='DL-path' required className="inputForm" onChange={
                 e => updateDownloadPath(e.target.value)}/>
             </form>
           </div>
@@ -256,7 +270,7 @@ export function PlaylistTable({playlist, downloadPath}) {
       <table className='Table'>
         <tr>
           <th>
-              <input type="checkbox" class="checkmark" onChange={
+              <input type="checkbox" className="checkmark" onChange={
                   e => {
                     const isChecked = e.target.checked;
                     
@@ -280,7 +294,7 @@ export function PlaylistTable({playlist, downloadPath}) {
           tracks.map((track, index) =>
             (
               <tr>
-                <td><input type="checkbox" class="checkmark" checked={track.checked} onChange={
+                <td><input type="checkbox" className="checkmark" checked={track.checked} onChange={
                   e => {
                     const clonedTracks = [...tracks];
                     clonedTracks[index].checked = !clonedTracks[index].checked;
