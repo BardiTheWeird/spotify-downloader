@@ -54,7 +54,7 @@ export function InputBar() {
             <form onSubmit={submitPlaylistLink} class="inputForm">
               <input placeholder='Spotify Playlist Link' type="text" name='PL-URL' required class="inputForm" onChange={
                 e => updateFormData(e.target.value.trim())}/>
-              <input type="submit"/>
+              <input type="submit" value="Submit"/>
             </form>
           </div>
           <div className="SearchBar">
