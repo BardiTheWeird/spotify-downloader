@@ -34,10 +34,10 @@
   color: rgb(177, 175, 175);
 }
 
-.Dark input[type="text"]:-internal-autofill-selected, textarea {
-  -webkit-box-shadow: #1f2125 !important;
-  background-color: #1f2125 !important;
-  color: #1f2125 !important;
+/* BECAUSE WEBKIT AUTOFILL IS FULL OF SHIT*/
+.Dark input[type="text"]:-webkit-autofill {
+  -webkit-text-fill-color: gainsboro;
+  -webkit-box-shadow: 0 0 0px 1000px #1f2125 inset;
 }
 
 .Light {
@@ -51,6 +51,11 @@
 
 .Light input::placeholder {
   color: rgb(119, 119, 192);
+}
+
+.Light input[type="text"]:-webkit-autofill {
+  -webkit-text-fill-color: darkblue;
+  -webkit-box-shadow: 0 0 0px 1000px rgb(235, 235, 235) inset;
 }
 
 .App-header {
