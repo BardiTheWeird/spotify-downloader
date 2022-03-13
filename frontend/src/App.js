@@ -7,25 +7,18 @@ export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 export function App() {
   const [isDark, updateisDark] = 
     React.useState(isDarkInitialValue);
-  console.log("isDark =", isDark);
   React.useEffect(() => {
     localStorage.setItem("DarkMode", isDark.toString())
-    console.log("updated DarkMode to", localStorage.getItem("DarkMode"));
   }, [isDark]);
 
   function LightDark() {
-    console.log('LighDark:')
-    console.log('  isDark =', isDark);
     let returnVal;
     if (isDark === true) {
-      console.log("  it's fucking dark");
       returnVal = "Dark";
     }
     else {
-      console.log("  it's bloody light");
       returnVal = "Light";
     }
-    console.log("  returnVal =", returnVal);
     return returnVal;
   }
   return (
@@ -57,23 +50,22 @@ export function InputBar() {
     let response = await fetch("http://localhost:8080/api/v1/spotify/playlist?link=" + formData);
     let playlist = await response.json();
     updatePlaylist(playlist);
-    console.log(response)
   }
-  
+
   return (
     <>
       <div className="Bar">
         <div>
           <div className="SearchBar">
             <form onSubmit={submitPlaylistLink} className="inputForm">
-              <input placeholder='Spotify Playlist Link' type="text" name='PL-URL' required className="inputForm" onChange={
+              <input placeholder='Spotify Link (https://open.spotify.com/playlist/etc...)' type="text" name='PL-URL' required className="inputForm" onChange={
                 e => updateFormData(e.target.value.trim())}/>
               <input type="submit" value="Submit"/>
             </form>
           </div>
           <div className="SearchBar">
             <form className="inputForm">
-              <input placeholder='Download Directory' type="text" name='DL-path' required className="inputForm" onChange={
+              <input placeholder='Insert Download Directory' type="text" name='DL-path' required className="inputForm" onChange={
                 e => updateDownloadPath(e.target.value)}/>
             </form>
           </div>
@@ -143,7 +135,6 @@ export function PlaylistTable({playlist, downloadPath}) {
         downloadCounter.current--;
         if (downloadCounter.current == 0) {
           isDownloading.current = false;
-          console.log("finished downloading");
           setForceUpdate(Date.now());
         }
       }
@@ -219,10 +210,8 @@ export function PlaylistTable({playlist, downloadPath}) {
           downloadCounter.current--;
           if (downloadCounter.current == 0) {
             isDownloading.current = false;
-            console.log("finished downloading");
             setForceUpdate(Date.now());
           }
-          console.log(downloadCounter.current)
           break;
         }
       }
