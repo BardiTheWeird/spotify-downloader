@@ -1,6 +1,8 @@
 import logo from './logo.svg';
 import './App.css';
 import React from 'react';
+// import { dialog } from 'electron';
+const {ipcRenderer} = window.require('electron');
 
 export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 
@@ -43,7 +45,13 @@ export function App() {
 export function InputBar() {
   const [formData, updateFormData] = React.useState();
   const [playlist, updatePlaylist] = React.useState();
-  const [downloadPath, updateDownloadPath] = React.useState();
+  const [downloadPath, updateDownloadPath] = React.useState('');
+
+  React.useEffect(() => {
+    ipcRenderer.on('returnDirectory', (e, path) => {
+      updateDownloadPath(path[0]);
+    });
+  }, []);
 
   const submitPlaylistLink = async (e) => {
     e.preventDefault();
@@ -60,13 +68,19 @@ export function InputBar() {
             <form onSubmit={submitPlaylistLink} className="inputForm">
               <input placeholder='Spotify Link (https://open.spotify.com/playlist/etc...)' type="text" name='PL-URL' required className="inputForm" onChange={
                 e => updateFormData(e.target.value.trim())}/>
-              <input type="submit" value="Submit"/>
+              <input type="submit" className="uselessButton" value="Submit"/>
             </form>
           </div>
           <div className="SearchBar">
-            <form className="inputForm">
+            <form onSubmit={e => e.preventDefault()} className="inputForm">
               <input placeholder='Insert Download Directory' type="text" name='DL-path' required className="inputForm" onChange={
-                e => updateDownloadPath(e.target.value)}/>
+                e => updateDownloadPath(e.target.value)}
+                  value={downloadPath}
+                />
+              <button className="uselessButton" onClick={e => {
+                e.preventDefault();
+                ipcRenderer.send('openDirectory');
+              }}>Browse</button>
             </form>
           </div>
         </div>
@@ -129,7 +143,7 @@ export function PlaylistTable({playlist, downloadPath}) {
           artist: track.artists.join(' '),
           album: track.album_title,
           image: track.album_image
-        })
+        }),
       });
       if (downloadResponse.status !== 204) {
         downloadCounter.current--;
@@ -149,7 +163,8 @@ export function PlaylistTable({playlist, downloadPath}) {
           }
           break;
         case 400:
-          track.status = "Not Available";
+          track.status = "Bad request";
+          console.log(await downloadResponse.json());
           break;
         case 403:
           track.status = "Invalid path";

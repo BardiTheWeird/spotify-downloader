@@ -223,3 +223,7 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+.uselessButton {
+  width: 100px;
+}
