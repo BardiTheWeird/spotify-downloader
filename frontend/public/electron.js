@@ -1,8 +1,17 @@
-const path = require('path');
-
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-
+const {spawn, exec} = require('child_process');
+const kill = require('tree-kill');
 const isDev = require('electron-is-dev');
+
+const child = spawn('../backend/build/main.exe', 
+    ['-settings', '../backend/settings.json']
+);
+child.stdout.on('data', data => {
+    console.log('BACKEND:', data.toString());
+});
+child.stderr.on('data', data => {
+    console.log('BACKEND:', data.toString());
+});
 
 ipcMain.on('openDirectory', (e, a) => {
     const path = dialog.showOpenDialogSync({
@@ -46,7 +55,10 @@ app.whenReady().then(createWindow);
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    console.log('child.pid', child.pid);
+    kill(child.pid);
     app.quit();
+    // spawn("powershell", ['taskkill', '/pid', child.pid, '/F', '/T']);
   }
 });
 

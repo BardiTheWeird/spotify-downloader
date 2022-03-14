@@ -12,12 +12,12 @@ type ServerSettings struct {
 }
 
 func (s *Server) ConfigureFromSettingsFile() bool {
-	if _, err := os.Stat("settings.json"); os.IsNotExist(err) {
-		log.Println("settings.json does not exist")
+	if _, err := os.Stat(s.SettingsFileLocation); os.IsNotExist(err) {
+		log.Println("settings file does not exist at", s.SettingsFileLocation)
 		return false
 	}
 
-	file, err := os.Open("settings.json")
+	file, err := os.Open(s.SettingsFileLocation)
 	if err != nil {
 		log.Println("error opening settings.json:", err)
 		return false
@@ -34,7 +34,7 @@ func (s *Server) ConfigureFromSettingsFile() bool {
 }
 
 func (s *Server) UpdateSettingsFile() bool {
-	file, err := os.Create("settings.json")
+	file, err := os.Create(s.SettingsFileLocation)
 	if err != nil {
 		log.Println("error creating settings.json:", err)
 		return false
