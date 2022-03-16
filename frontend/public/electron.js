@@ -1,10 +1,26 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const {spawn, exec} = require('child_process');
+const {spawn} = require('child_process');
+const path = require('path');
 const kill = require('tree-kill');
 const isDev = require('electron-is-dev');
 
-const child = spawn('../backend/build/main.exe', 
-    ['-settings', '../backend/settings.json']
+const resourcesDir = process.resourcesPath;
+
+const serve = require('electron-serve');
+const loadURL = serve({directory: path.join(resourcesDir, 'front')});
+
+const appUrl = isDev
+  ? 'http://localhost:3000'
+  : `file://${path.join(resourcesDir, 'index.html')}`;
+const backendExecutablePath = isDev
+  ? '../backend/build/main.exe'
+  : path.join(resourcesDir, 'backend.exe');
+const backendSettingsPath = isDev
+  ? '../backend/settings.json'
+  : path.join(resourcesDir, 'settings.json');
+
+const child = spawn(backendExecutablePath, 
+    ['-settings', backendSettingsPath]
 );
 child.stdout.on('data', data => {
     console.log('BACKEND:', data.toString());
@@ -34,11 +50,13 @@ function createWindow() {
 
   // and load the index.html of the app.
   // win.loadFile("index.html");
-  win.loadURL(
-    isDev
-      ? 'http://localhost:3000'
-      : `file://${path.join(__dirname, '../build/index.html')}`
-  );
+  if (isDev) {
+    win.loadURL(appUrl);
+  }
+  else {
+    loadURL(win);
+  }
+  
   // Open the DevTools.
   if (isDev) {
     win.webContents.openDevTools();

@@ -11,6 +11,7 @@
 # production
 /build
 /electron-build
+/backend
 
 # misc
 .DS_Store
