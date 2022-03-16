@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"spotify-downloader/server"
 )
@@ -27,6 +29,12 @@ func runServer() {
 
 	srv.SonglinkHelper.SetDefaults()
 
-	log.Println("Starting a server at :8080...")
-	log.Fatal(http.ListenAndServe("localhost:8080", &srv))
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("listening on port",
+		listener.Addr().(*net.TCPAddr).Port)
+
+	log.Fatal(http.Serve(listener, &srv))
 }

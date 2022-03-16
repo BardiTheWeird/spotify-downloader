@@ -13,20 +13,40 @@ const appUrl = isDev
   ? 'http://localhost:3000'
   : `file://${path.join(resourcesDir, 'index.html')}`;
 const backendExecutablePath = isDev
-  ? '../backend/build/main.exe'
+  ? '../backend/build/backend.exe'
   : path.join(resourcesDir, 'backend.exe');
 const backendSettingsPath = isDev
   ? '../backend/settings.json'
   : path.join(resourcesDir, 'settings.json');
 
-const child = spawn(backendExecutablePath, 
+let backendStatus;
+const backend = spawn(backendExecutablePath, 
     ['-settings', backendSettingsPath]
 );
-child.stdout.on('data', data => {
-    console.log('BACKEND:', data.toString());
+
+backend.on('error', err => {
+  backendStatus = {
+    running: false
+  }
+  console.log('BACKEND error:', err);
+})
+
+const portRegex = /listening on port (\d+)/
+backend.stdout.on('data', data => {
+  const stringData = data.toString();
+  const match = stringData.match(portRegex);
+  if (match && match.length > 1) {
+    const port = match[1];
+    backendStatus = {
+      running: true,
+      address: `http://localhost:${port}/api/v1`
+    }
+    console.log('backend status:', backendStatus);
+  }
+  console.log('BACKEND:', stringData);
 });
-child.stderr.on('data', data => {
-    console.log('BACKEND:', data.toString());
+backend.stderr.on('data', data => {
+  console.log('BACKEND:', data.toString());
 });
 
 ipcMain.on('openDirectory', (e, a) => {
@@ -35,6 +55,16 @@ ipcMain.on('openDirectory', (e, a) => {
     });
     e.sender.send('returnDirectory', path);
 })
+
+// ipcMain.on('backendStatus', e => {
+//   console.log('backendStatus was requested');
+//   e.sender.send('backendStatusReturn', backendStatus);
+//   return backendStatus;
+// });
+
+ipcMain.handle('backendStatus', () => {
+  return backendStatus;
+});
 
 function createWindow() {
   // Create the browser window.
@@ -73,8 +103,12 @@ app.whenReady().then(createWindow);
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    console.log('child.pid', child.pid);
-    kill(child.pid);
+    try {
+      kill(backend.pid);
+    }
+    catch (error) {
+      console.log("error killing a backend process:", error);
+    }
     app.quit();
     // spawn("powershell", ['taskkill', '/pid', child.pid, '/F', '/T']);
   }

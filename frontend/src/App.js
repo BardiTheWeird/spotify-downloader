@@ -1,10 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
 import React from 'react';
-// import { dialog } from 'electron';
 const {ipcRenderer} = window.require('electron');
 
 export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
+
+const BaseUrlContex = React.createContext();
 
 export function App() {
   const [isDark, updateisDark] = 
@@ -12,6 +13,25 @@ export function App() {
   React.useEffect(() => {
     localStorage.setItem("DarkMode", isDark.toString())
   }, [isDark]);
+
+  const [baseUrl, updateBaseUrl] = React.useState();
+  React.useEffect(() => {
+    (async () => {
+      while (true) {
+        const backendStatus = await ipcRenderer.invoke('backendStatus');
+        if (backendStatus) {
+          if (backendStatus.running) {
+            updateBaseUrl(backendStatus.address);
+          }
+          else {
+            updateBaseUrl(null);
+          }
+          break;
+        }
+        await new Promise(r => setTimeout(r, 500));
+      }
+    })();
+  }, []);
 
   function LightDark() {
     let returnVal;
@@ -25,24 +45,32 @@ export function App() {
   }
   return (
     <div className={`App ${LightDark()}`}>
-      <div  className='App-header-info'>Light/Dark</div>
-      <label className="switch">
-        <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
-        <span className="slider round"></span>
-      </label>
-      <header className="App-header">
-        <div>Enter Spotify Playlist Or Album URL:</div>
-      </header>
-      <header>
-      <div className='App-header-info'>If directory is not defined PL will be loaded into "userDownloads" folder</div>
-      </header>
-      <InputBar />
+      {
+        baseUrl === undefined &&
+          <div>Backend is starting...</div>
+        || baseUrl === null &&
+          <div>Backend could not be started</div>
+        || <BaseUrlContex.Provider value={baseUrl}>
+          <div  className='App-header-info'>Light/Dark</div>
+          <label className="switch">
+            <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
+            <span className="slider round"></span>
+          </label>
+          <header className="App-header">
+            <div>Enter Spotify Playlist Or Album URL:</div>
+          </header>
+          <header>
+          <div className='App-header-info'>If directory is not defined PL will be loaded into "userDownloads" folder</div>
+          </header>
+          <InputBar />
+        </BaseUrlContex.Provider>
+      }
     </div>
-    
   );
 }
 
 export function InputBar() {
+  const baseUrl = React.useContext(BaseUrlContex);
   const [formData, updateFormData] = React.useState();
   const [playlist, updatePlaylist] = React.useState();
   const [downloadPath, updateDownloadPath] = React.useState('');
@@ -55,7 +83,7 @@ export function InputBar() {
 
   const submitPlaylistLink = async (e) => {
     e.preventDefault();
-    let response = await fetch("http://localhost:8080/api/v1/spotify/playlist?link=" + formData);
+    let response = await fetch(`${baseUrl}/spotify/playlist?link=${formData}`);
     let playlist = await response.json();
     updatePlaylist(playlist);
   }
@@ -95,6 +123,7 @@ export function InputBar() {
 export default App;
 
 export function PlaylistTable({playlist, downloadPath}) {
+  const baseUrl = React.useContext(BaseUrlContex);
   // a workaround for forcing a rerender
   const [, setForceUpdate] = React.useState(Date.now());
   const isDownloading = React.useRef(false);
@@ -128,7 +157,7 @@ export function PlaylistTable({playlist, downloadPath}) {
       if (!track.checked) {
         return;
       }
-      let url = 'http://localhost:8080/api/v1/download/start';
+      let url = `${baseUrl}/download/start`;
       let downloadFolder = downloadPath;
       if (!downloadFolder) {
         downloadFolder = "./userDownloads/"
@@ -191,13 +220,13 @@ export function PlaylistTable({playlist, downloadPath}) {
         if (!downloadFolder) {
           downloadFolder = "./userDownloads/"
         }
-        const getStatusResponse = await fetch(`http://localhost:8080/api/v1/download/status?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`);
+        const getStatusResponse = await fetch(`${baseUrl}/download/status?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`);
         const downloadEntry = await getStatusResponse.json();
 
         switch (downloadEntry.status) {
           case 0: 
             const percentage = Math.floor(downloadEntry.downloaded_bytes/downloadEntry.total_bytes*100);
-            copiedTracks[trackIndex].status = `Downloading ${percentage}%`;
+            copiedTracks[trackIndex].status = `Downloading ${percentage || 0}%`;
             break;
           case 1: 
             copiedTracks[trackIndex].status = 'Converting'
@@ -246,7 +275,7 @@ export function PlaylistTable({playlist, downloadPath}) {
     if (!downloadFolder) {
       downloadFolder = "./userDownloads/"
     }
-    let url = `http://localhost:8080/api/v1/download/cancel?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`;
+    let url = `${baseUrl}/download/cancel?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`;
     let downloadResponse = await fetch(url, {
       method: 'POST',
     })
