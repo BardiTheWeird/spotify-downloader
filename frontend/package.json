@@ -3,6 +3,7 @@
   "main": "public/electron.js",
   "description": "a tool to download music from spotify playlists or albums",
   "version": "0.1.0",
+  "author": "Renault Megane SD card",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.2",
@@ -61,6 +62,7 @@
     "appId": "spotify.downloader",
     "productName": "spotify_downloader",
     "win": {
+      "icon": "resources/icon.ico",
       "target": [
         "portable"
       ]
@@ -69,6 +71,7 @@
       "artifactName": "spotify_downloader.exe"
     },
     "directories": {
+      "buildResources": "resources",
       "output": "electron-build"
     },
     "files": [
