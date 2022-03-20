@@ -7,22 +7,17 @@ const isDev = require('electron-is-dev');
 const resourcesDir = process.resourcesPath;
 
 const serve = require('electron-serve');
-const loadURL = serve({directory: path.join(resourcesDir, 'front')});
+const serveDirectory = serve({directory: path.join(resourcesDir, 'front')});
 
 const appUrl = isDev
   ? 'http://localhost:3000'
-  : `file://${path.join(resourcesDir, 'index.html')}`;
+  : 'app://-';
 const backendExecutablePath = isDev
   ? '../backend/build/backend.exe'
   : path.join(resourcesDir, 'backend.exe');
-const backendSettingsPath = isDev
-  ? '../backend/settings.json'
-  : path.join(resourcesDir, 'settings.json');
 
 let backendStatus;
-const backend = spawn(backendExecutablePath, 
-    ['-settings', backendSettingsPath]
-);
+const backend = spawn(backendExecutablePath);
 
 backend.on('error', err => {
   backendStatus = {
@@ -49,28 +44,20 @@ backend.stderr.on('data', data => {
   console.log('BACKEND:', data.toString());
 });
 
-ipcMain.on('openDirectory', (e, a) => {
-    const path = dialog.showOpenDialogSync({
-        properties: ["openDirectory"]
-    });
-    e.sender.send('returnDirectory', path);
-})
-
-// ipcMain.on('backendStatus', e => {
-//   console.log('backendStatus was requested');
-//   e.sender.send('backendStatusReturn', backendStatus);
-//   return backendStatus;
-// });
-
-ipcMain.handle('backendStatus', () => {
-  return backendStatus;
+ipcMain.handle('openDirectory', () => {
+  const path = dialog.showOpenDialogSync({
+    properties: ["openDirectory"]
+  });
+  return path;
 });
+ipcMain.handle('backendStatus', () => backendStatus);
+ipcMain.handle('appUrl', () => appUrl);
 
 function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 1080,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
@@ -79,12 +66,11 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  // win.loadFile("index.html");
   if (isDev) {
     win.loadURL(appUrl);
   }
   else {
-    loadURL(win);
+    serveDirectory(win);
   }
   
   // Open the DevTools.
@@ -110,7 +96,6 @@ app.on('window-all-closed', () => {
       console.log("error killing a backend process:", error);
     }
     app.quit();
-    // spawn("powershell", ['taskkill', '/pid', child.pid, '/F', '/T']);
   }
 });
 

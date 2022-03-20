@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -16,49 +15,6 @@ import (
 	"spotify-downloader/spotify"
 	"strings"
 )
-
-func (s *Server) handleSpotifyConfigure() http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		configuration := struct {
-			ClientId     string `json:"client_id"`
-			ClientSecret string `json:"client_secret"`
-		}{}
-
-		err := json.NewDecoder(r.Body).Decode(&configuration)
-		if err != nil {
-			log.Panicln("error decoding client configuration")
-		}
-
-		if len(configuration.ClientId) == 0 {
-			requesthelpers.WriteJsonResponse(rw, 400,
-				requesthelpers.CreateErrorPayload("client_id is empty"))
-			return
-		}
-		if len(configuration.ClientSecret) == 0 {
-			requesthelpers.WriteJsonResponse(rw, 400,
-				requesthelpers.CreateErrorPayload("client_secret is empty"))
-			return
-		}
-
-		oldClientId := s.SpotifyHelper.ClientId
-		oldClientSecret := s.SpotifyHelper.ClientSecret
-		s.SpotifyHelper.ClientId = configuration.ClientId
-		s.SpotifyHelper.ClientSecret = configuration.ClientSecret
-
-		if !s.SpotifyHelper.UpdateClientToken() {
-			requesthelpers.WriteJsonResponse(rw, 400,
-				requesthelpers.CreateErrorPayloadWithCode(401,
-					"can't authenticate using new credentials"))
-
-			s.SpotifyHelper.ClientId = oldClientId
-			s.SpotifyHelper.ClientSecret = oldClientSecret
-			s.SpotifyHelper.UpdateClientToken()
-			return
-		}
-		s.UpdateSettingsFile()
-		rw.WriteHeader(http.StatusNoContent)
-	}
-}
 
 func (s *Server) handlePlaylist() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
@@ -86,7 +42,10 @@ func (s *Server) handlePlaylist() http.HandlerFunc {
 			id = path.Base(spotifyUrl.Path)
 		}
 
-		playlist, status := s.SpotifyHelper.GetPlaylistById(id, linkType+"s")
+		playlist, status := s.SpotifyHelper.GetPlaylistById(
+			id,
+			linkType+"s",
+			r.Header.Get("Authorization"))
 
 		switch status {
 		case spotify.ErrorSendingRequest, spotify.UnexpectedResponseStatus:

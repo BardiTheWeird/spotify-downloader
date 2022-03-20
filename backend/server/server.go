@@ -16,8 +16,6 @@ type Server struct {
 	SonglinkHelper songlink.SonglinkHelper
 	downloader.DownloadHelper
 
-	SettingsFileLocation string
-
 	FeatureYoutubeDlInstalled bool
 	FeatureFfmpegInstalled    bool
 

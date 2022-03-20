@@ -1,11 +1,114 @@
 import logo from './logo.svg';
 import './App.css';
 import React from 'react';
+import {
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 const {ipcRenderer} = window.require('electron');
 
 export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 
 const BaseUrlContex = React.createContext();
+
+export function IsLoggedIn() {
+  const [user, updateUser] = React.useState();
+  const [code_challenge, updateCode_challenge] = React.useState();
+  const [appUrl, _updateAppUrl] = React.useState();
+
+  // returns userObj or null if not logged in
+  async function getUser() {
+    const accessToken = localStorage.getItem('access token');
+    if (!accessToken) {
+      return null;
+    }
+    const userInfoResponse = await fetch('https://api.spotify.com/v1/me', {
+      headers: { 
+        'Accept': 'application/json', 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      }
+    });
+    console.log("YOU STILL DON'T HANDLE TOKEN EXPIRATION (it gives 401)");
+    if (userInfoResponse.status !== 200) {
+      return null
+    }
+    const userInfo = await userInfoResponse.json();
+
+    return {
+      display_name: userInfo.display_name,
+      image: userInfo.images.length === 0 ? null : userInfo.images[0].url
+    };
+  }
+
+  async function updateCodeChallenge() {
+    const code_verifier = generateRandomString(64);
+      updateCode_challenge(await generateCodeChallenge(code_verifier));
+      localStorage.setItem('code_verifier', code_verifier);
+  }
+
+  async function updateAppUrl() {
+    _updateAppUrl(await ipcRenderer.invoke('appUrl'));
+  }
+
+  React.useEffect(async () => {
+    const user = await getUser();
+    updateUser(user);
+    if (!user) {
+      updateCodeChallenge();
+      updateAppUrl();
+    }
+  },[])
+
+  function Logout() {
+    localStorage.setItem('access token', '');
+    localStorage.setItem('refresh token', '');
+    updateUser(null);
+    updateCodeChallenge();
+    updateAppUrl();
+  }
+  
+  if (!user) {
+    if (!appUrl) {
+      return <></>;
+    }
+
+    return <>{
+      code_challenge && <a href={`https://accounts.spotify.com/authorize?response_type=code&client_id=63d55a793f9c4a9e8d5aacba30069a23&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${code_challenge}`}>Log into Spotify</a>
+    }</>
+  }
+  else {
+    return <div className='userGreeting'>
+      <img src={user.image} className='userImage'/>
+      <span className='userGreetingsName'>{user.display_name}</span>
+      <button className="uselessButton" onClick={Logout}>Log Out</button>
+    </div>
+  }
+}
+
+function generateRandomString(length) {
+  let text = '';
+  const possible =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  for (let i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+async function generateCodeChallenge(codeVerifier) {
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(codeVerifier),
+  );
+
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
 
 export function App() {
   const [isDark, updateisDark] = 
@@ -45,28 +148,59 @@ export function App() {
   }
   return (
     <div className={`App ${LightDark()}`}>
-      {
-        baseUrl === undefined &&
-          <div>Backend is starting...</div>
-        || baseUrl === null &&
-          <div>Backend could not be started</div>
-        || <BaseUrlContex.Provider value={baseUrl}>
-          <div  className='App-header-info'>Light/Dark</div>
-          <label className="switch">
-            <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
-            <span className="slider round"></span>
-          </label>
-          <header className="App-header">
-            <div>Enter Spotify Playlist Or Album URL:</div>
-          </header>
-          <header>
-          <div className='App-header-info'>If directory is not defined PL will be loaded into "userDownloads" folder</div>
-          </header>
-          <InputBar />
-        </BaseUrlContex.Provider>
-      }
+    <Routes>
+      <Route path="/callback" element={<AuthCallback />}/>
+      <Route path="/" element=
+        {
+          baseUrl === undefined &&
+            <div>Backend is starting...</div>
+          || baseUrl === null &&
+            <div>Backend could not be started</div>
+          || <BaseUrlContex.Provider value={baseUrl}>
+            <div  className='App-header-info'>Light/Dark</div>
+            <label className="switch">
+              <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
+              <span className="slider round"></span>
+            </label>
+            <header className="App-header">
+              <IsLoggedIn/>
+              <div>Enter Spotify Playlist Or Album URL:</div>
+            </header>
+            <header>
+            <div className='App-header-info'>If directory is not defined PL will be loaded into "userDownloads" folder</div>
+            </header>
+            <InputBar />
+          </BaseUrlContex.Provider>
+        }/>
+    </Routes>
     </div>
   );
+}
+
+export function AuthCallback() {
+  const navigate = useNavigate();
+  React.useEffect(async () => {
+    const code_verifier = localStorage.getItem('code_verifier');
+    const url = new URL(document.URL)
+    const authorizationCode = url.searchParams.get('code');
+
+    const appUrl = await ipcRenderer.invoke('appUrl');
+
+    const response = await fetch(`https://accounts.spotify.com/api/token?grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${appUrl}/callback&client_id=63d55a793f9c4a9e8d5aacba30069a23&code_verifier=${code_verifier}`, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    console.log('response:', response);
+    const responseBody = await response.json();
+    console.log('responseBody:', responseBody);
+
+    localStorage.setItem('access token', responseBody.access_token || '');
+    localStorage.setItem('refresh token', responseBody.refresh_token || '');
+
+    navigate('/');
+  }, [])
+
+  return <></>;
 }
 
 export function InputBar() {
@@ -75,15 +209,15 @@ export function InputBar() {
   const [playlist, updatePlaylist] = React.useState();
   const [downloadPath, updateDownloadPath] = React.useState('');
 
-  React.useEffect(() => {
-    ipcRenderer.on('returnDirectory', (e, path) => {
-      updateDownloadPath(path[0]);
-    });
-  }, []);
-
   const submitPlaylistLink = async (e) => {
     e.preventDefault();
-    let response = await fetch(`${baseUrl}/spotify/playlist?link=${formData}`);
+    const accessToken = localStorage.getItem('access token');
+    let response = await fetch(`${baseUrl}/spotify/playlist?link=${formData}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      }
+    }
+    );
     let playlist = await response.json();
     updatePlaylist(playlist);
   }
@@ -105,9 +239,10 @@ export function InputBar() {
                 e => updateDownloadPath(e.target.value)}
                   value={downloadPath}
                 />
-              <button className="uselessButton" onClick={e => {
+              <button className="uselessButton" onClick={async e => {
                 e.preventDefault();
-                ipcRenderer.send('openDirectory');
+                const path = await ipcRenderer.invoke('openDirectory');
+                updateDownloadPath(path[0]);
               }}>Browse</button>
             </form>
           </div>
@@ -193,7 +328,6 @@ export function PlaylistTable({playlist, downloadPath}) {
           break;
         case 400:
           track.status = "Bad request";
-          console.log(await downloadResponse.json());
           break;
         case 403:
           track.status = "Invalid path";
@@ -337,7 +471,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                 disabled={isDownloading.current}
                 /></td>
                 <td><img src={track.album_image}
-                height="30" px/>
+                height="30px"/>
                 </td>
                 <td>{track.artists}</td>
                 <td>{track.title}</td>

@@ -37,3 +37,16 @@ func IsFeatureEnabled(feature *bool, featureName string) func(http.Handler) http
 		})
 	}
 }
+
+func IsHeaderPresent(header string) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			if r.Header.Get(header) == "" {
+				requesthelpers.WriteJsonResponse(rw, 400,
+					requesthelpers.CreateErrorPayload(header+" header is not present"))
+				return
+			}
+			h.ServeHTTP(rw, r)
+		})
+	}
+}

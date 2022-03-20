@@ -27,6 +27,7 @@ type Track = {
 Everything starts with /api/v1
 - `GET /spotify/playlist?id={spotify_playlist_id}`
 	- `GET /spotify/playlist?link={spotify_playlist_link}`
+	- Requires an `Authorization` header with a Spotify access token.
 	- Returns a Playlist entity for a specified Spotify Playlist Id or Spotify Playlist Link. When both `id` and `link` are provided, `id` takes precedence.
 	- Status codes:
 		- 200 + playlist payload
@@ -35,20 +36,6 @@ Everything starts with /api/v1
 		- 404 => no playlist with such id
 		- 429 => too many requests
 		- 500
-- `POST /spotify/configure`
-	- Request Body:
-	```
-	type SpotifyClientConfiguration {
-		client_id: string,
-		client_secret: string
-	}
-	```
-	- Configure Spotify with Client Id and Client Secret
-	- Status codes:
-		- 204
-		- 400 + error payload:
-			- 0 => client id or client secret not provided
-			- 400 => bad credentials
 - `POST /download/start`
 	- Request Body:
 	```
