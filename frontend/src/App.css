@@ -64,6 +64,7 @@
   align-items: center;
   justify-content: flex-start;
   font-size: calc(10px + 2vmin);
+  padding-top: 50px;
 }
 
 .App-header-info {
@@ -238,10 +239,7 @@ input:checked + .slider:before {
   align-content: center;
   margin-top: auto;
   margin-bottom: auto;
-}
-
-.userGreetingsName {
-  margin-right: 10px;
+  padding: 5px;
 }
 
 .userImage {
@@ -249,5 +247,84 @@ input:checked + .slider:before {
   width: 25px;
   object-fit: cover;
   border-radius: 50%;
-  margin: 0 10px;
+  margin: auto 10px auto 5px;
+}
+
+ul {
+  list-style-type: none;
+  margin-block: 0;
+  padding-inline-start: 0;
+
+}
+
+li>a {
+  text-decoration: none;
+  color: darkgrey;
+}
+
+.logout {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+}
+
+ul li:hover .logout {
+  display: block;
+  position: absolute;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transform: translate(5px, 5px);
+  width: 100px;
+  height: 30px;
+  opacity: 1;
+  visibility: visible;
+  transition: 200ms;
+}
+
+.userleft {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  padding-left: 10px;
+}
+
+.userright {
+  position: absolute;
+  top: 0%;
+  right: 0%;
+  padding-right: 10px;
+}
+
+.Dark .uselessButton {
+  background-color: #5d6168;
+}
+
+.Dark .uselessButton:hover {
+  background-color: #777c85;
+}
+
+.Dark .logout {
+  background-color: #5d6168;
+}
+
+.Dark .logout:hover {
+  background-color: #777c85;
+}
+
+.Light .uselessButton {
+  background-color: rgb(235, 235, 235);;
+}
+
+.Light .uselessButton:hover {
+  background-color: rgb(255, 255, 255);;
+}
+
+.Light .logout {
+  background-color: rgb(235, 235, 235);;
+}
+
+.Light .logout:hover {
+  background-color: rgb(255, 255, 255);;
 }

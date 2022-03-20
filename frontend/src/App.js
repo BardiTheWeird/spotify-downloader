@@ -75,15 +75,25 @@ export function IsLoggedIn() {
     }
 
     return <>{
-      code_challenge && <a href={`https://accounts.spotify.com/authorize?response_type=code&client_id=63d55a793f9c4a9e8d5aacba30069a23&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${code_challenge}`}>Log into Spotify</a>
+      code_challenge && <a href={`https://accounts.spotify.com/authorize?response_type=code&client_id=63d55a793f9c4a9e8d5aacba30069a23&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${code_challenge}`} className="userleft">Log In</a>
     }</>
   }
   else {
-    return <div className='userGreeting'>
-      <img src={user.image} className='userImage'/>
-      <span className='userGreetingsName'>{user.display_name}</span>
-      <button className="uselessButton" onClick={Logout}>Log Out</button>
-    </div>
+    return <>
+      <ul class="userleft">
+        <li>
+          <img src={user.image} className='userImage'/>
+          <span>{user.display_name} &#8681;</span>
+            <ul>
+              <li className='userGreeting'>
+              <button className="logout" onClick={Logout}
+              // uselessButton class removed
+              >Log Out</button>
+              </li>
+            </ul>
+        </li>        
+    </ul>
+    </>
   }
 }
 
@@ -157,17 +167,19 @@ export function App() {
           || baseUrl === null &&
             <div>Backend could not be started</div>
           || <BaseUrlContex.Provider value={baseUrl}>
-            <div  className='App-header-info'>Light/Dark</div>
+          <div className="userright">
+          <div  className='App-header-info'>Light/Dark</div>
             <label className="switch">
               <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
               <span className="slider round"></span>
             </label>
+          </div>
+            
             <header className="App-header">
               <IsLoggedIn/>
               <div>Enter Spotify Playlist Or Album URL:</div>
             </header>
             <header>
-            <div className='App-header-info'>If directory is not defined PL will be loaded into "userDownloads" folder</div>
             </header>
             <InputBar />
           </BaseUrlContex.Provider>
