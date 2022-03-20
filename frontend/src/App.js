@@ -11,27 +11,71 @@ const {ipcRenderer} = window.require('electron');
 export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 
 const BaseUrlContex = React.createContext();
+const IsLoggedInContext = React.createContext();
+
+async function authorizedFetch(input, init) {
+  async function innerFunction() {
+    let accessToken = localStorage.getItem('access token');
+    if (!accessToken) {
+      return null;
+    }
+    init = init || {};
+    init.headers = {
+      ...init.headers,
+      'Authorization': `Bearer ${accessToken}`,
+    }
+
+    let response = await fetch(input, init);
+    if (response.status === 401) {
+      // refresh access token
+      const refreshToken = localStorage.getItem('refresh token');
+      if (!refreshToken) {
+        return null;
+      }
+
+      const refreshResponse = await fetch('https://accounts.spotify.com/api/token', {
+        'grant_type': 'refresh_token',
+        'refresh_token': refreshToken,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      if (refreshResponse.status !== 200) {
+        return null;
+      }
+      const refreshResponseBody = refreshResponse.json();
+      accessToken = refreshResponseBody.access_token;
+      localStorage.setItem('access token', accessToken);
+
+      response = await fetch(input, init);
+    }
+    return response;
+  }
+
+  const result = innerFunction();
+  // clean up token if they're invalid
+  if (result === null) {
+    localStorage.setItem('access token', '');
+    localStorage.setItem('refresh token', '');
+  }
+  return result;
+}
 
 export function IsLoggedIn() {
+  const [isUserLogged, updateIsUserLogged] = React.useContext(IsLoggedInContext);
   const [user, updateUser] = React.useState();
   const [code_challenge, updateCode_challenge] = React.useState();
   const [appUrl, _updateAppUrl] = React.useState();
 
   // returns userObj or null if not logged in
   async function getUser() {
-    const accessToken = localStorage.getItem('access token');
-    if (!accessToken) {
-      return null;
-    }
-    const userInfoResponse = await fetch('https://api.spotify.com/v1/me', {
+    const userInfoResponse = await authorizedFetch('https://api.spotify.com/v1/me', {
       headers: { 
         'Accept': 'application/json', 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
       }
     });
-    console.log("YOU STILL DON'T HANDLE TOKEN EXPIRATION (it gives 401)");
-    if (userInfoResponse.status !== 200) {
+    if (!userInfoResponse || userInfoResponse.status !== 200) {
       return null
     }
     const userInfo = await userInfoResponse.json();
@@ -58,8 +102,10 @@ export function IsLoggedIn() {
     if (!user) {
       updateCodeChallenge();
       updateAppUrl();
+      updateIsUserLogged(false)
     }
-  },[])
+    else {updateIsUserLogged(true)}
+  },[]);
 
   function Logout() {
     localStorage.setItem('access token', '');
@@ -67,6 +113,7 @@ export function IsLoggedIn() {
     updateUser(null);
     updateCodeChallenge();
     updateAppUrl();
+    updateIsUserLogged(false);
   }
   
   if (!user) {
@@ -80,7 +127,7 @@ export function IsLoggedIn() {
   }
   else {
     return <>
-      <ul class="userleft">
+      <ul className="userleft">
         <li>
           <img src={user.image} className='userImage'/>
           <span>{user.display_name} &#8681;</span>
@@ -121,6 +168,7 @@ async function generateCodeChallenge(codeVerifier) {
 }
 
 export function App() {
+  const [isUserLogged, updateIsUserLogged] = React.useState();
   const [isDark, updateisDark] = 
     React.useState(isDarkInitialValue);
   React.useEffect(() => {
@@ -167,21 +215,21 @@ export function App() {
           || baseUrl === null &&
             <div>Backend could not be started</div>
           || <BaseUrlContex.Provider value={baseUrl}>
-          <div className="userright">
-          <div  className='App-header-info'>Light/Dark</div>
-            <label className="switch">
-              <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
-              <span className="slider round"></span>
-            </label>
-          </div>
+          <IsLoggedInContext.Provider value={[isUserLogged, updateIsUserLogged]}>
+            <div className="userright">
+              <div  className='App-header-info'>Light/Dark</div>
+              <label className="switch">
+                <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
+                <span className="slider round"></span>
+              </label>
+            </div>
             
             <header className="App-header">
               <IsLoggedIn/>
               <div>Enter Spotify Playlist Or Album URL:</div>
             </header>
-            <header>
-            </header>
             <InputBar />
+          </IsLoggedInContext.Provider>
           </BaseUrlContex.Provider>
         }/>
     </Routes>
@@ -216,6 +264,7 @@ export function AuthCallback() {
 }
 
 export function InputBar() {
+  const [isUserLogged, updateIsUserLogged] = React.useContext(IsLoggedInContext);
   const baseUrl = React.useContext(BaseUrlContex);
   const [formData, updateFormData] = React.useState();
   const [playlist, updatePlaylist] = React.useState();
@@ -223,13 +272,15 @@ export function InputBar() {
 
   const submitPlaylistLink = async (e) => {
     e.preventDefault();
-    const accessToken = localStorage.getItem('access token');
-    let response = await fetch(`${baseUrl}/spotify/playlist?link=${formData}`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      }
+    console.log('IsLoggedIn:', IsLoggedIn);
+    if (!isUserLogged) {
+      alert('Log in, please');
+      return;
     }
-    );
+    let response = await authorizedFetch(`${baseUrl}/spotify/playlist?link=${formData}`);
+    if (response === null) {
+      alert("YOU STILL DON'T HANDLE UNAUTHORIZED PLAYLIST SUBMIT (or your (refresh) tokens are ded, idk)");
+    }
     let playlist = await response.json();
     updatePlaylist(playlist);
   }
@@ -447,6 +498,7 @@ export function PlaylistTable({playlist, downloadPath}) {
       </div>
       
       <table className='Table'>
+      <thead>
         <tr>
           <th>
               <input type="checkbox" className="checkmark" onChange={
@@ -469,10 +521,12 @@ export function PlaylistTable({playlist, downloadPath}) {
           <th>Album</th>
           <th>Status</th>
         </tr>
+        </thead>
+      <tbody>
         {
           tracks.map((track, index) =>
             (
-              <tr>
+              <tr key={track.id}>
                 <td><input type="checkbox" className="checkmark" checked={track.checked} onChange={
                   e => {
                     const clonedTracks = [...tracks];
@@ -493,6 +547,7 @@ export function PlaylistTable({playlist, downloadPath}) {
             )
           )
         }
+        </tbody>
       </table>
     </>
   )
