@@ -122,7 +122,7 @@ export function IsLoggedIn() {
     }
 
     return <>{
-      code_challenge && <a href={`https://accounts.spotify.com/authorize?response_type=code&client_id=63d55a793f9c4a9e8d5aacba30069a23&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${code_challenge}`} className="userleft">Log In</a>
+      code_challenge && <a href={`https://accounts.spotify.com/authorize?response_type=code&client_id=63d55a793f9c4a9e8d5aacba30069a23&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${code_challenge}`} className="Login">Log In</a>
     }</>
   }
   else {

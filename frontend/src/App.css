@@ -313,14 +313,51 @@ ul li:hover .logout {
   vertical-align: 100%;
 }
 
+.Login {
+  position: absolute;
+  height: 25px;
+  width: fit-content;
+  top: 5px;
+  left: 0%;
+  padding-left: 10px;
+  padding-right: 5px;
+  padding-top: 2px;
+  padding-bottom: 3px;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 20px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  vertical-align: 100%;
+  background-color: rgb(243, 240, 240);
+  border-color: rgb(202, 200, 200);
+}
+
 .Dark .userleft {
   background-color: #2f3033;
   border-color: #535458;
+}
+ 
+.Dark .Login {
+  background-color: #2f3033;
+  border-color: #535458;
+  color: gainsboro;
+  text-decoration: none;
 }
 
 .Light .userleft {
   background-color: rgb(243, 240, 240);
   border-color: rgb(202, 200, 200);
+}
+
+.Light .Login {
+  background-color: rgb(243, 240, 240);
+  border-color: rgb(202, 200, 200);
+  color: darkblue;
+  font-style: normal;
+  text-decoration: none;
 }
 
 .userright {
