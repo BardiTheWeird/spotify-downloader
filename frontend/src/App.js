@@ -130,7 +130,7 @@ export function IsLoggedIn() {
       <ul className="userleft">
         <li>
           <img src={user.image} className='userImage'/>
-          <span>{user.display_name} &#8681;</span>
+          <span>{user.display_name}</span>
             <ul>
               <li className='userGreeting'>
               <button className="logout" onClick={Logout}

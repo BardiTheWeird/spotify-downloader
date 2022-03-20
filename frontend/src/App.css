@@ -101,6 +101,9 @@
   width: 90%;
   display: flex;
   justify-content: space-between;
+  height: 16px;
+  margin-bottom: 8px;
+  border-radius: 5px;
 }
 
 .Table {
@@ -120,11 +123,25 @@
   padding: 10px;
   margin-left: auto;
   margin-right: auto;
+  border-radius: 7px;
   background-color: rgb(rgb(118, 121, 146), green, blue);
 }
 
 .DownloadButton:hover {
   background-color: rgb(rgb(96, 139, 96), green, blue);
+}
+
+.CancelDownloadButton {
+  display: block;
+  padding: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 7px;
+  background-color: crimson;
+}
+
+.CancelDownloadButton:hover {
+  background-color: brown;
 }
 
 .checkmark {
@@ -144,18 +161,6 @@
   margin-left: auto;
   margin-right: auto;
   width: 300px;
-}
-
-.CancelDownloadButton {
-  display: block;
-  padding: 10px;
-  margin-left: auto;
-  margin-right: auto;
-  background-color: crimson;
-}
-
-.CancelDownloadButton:hover {
-  background-color: brown;
 }
 
 /* The switch - the box around the slider */
@@ -228,8 +233,10 @@ input:checked + .slider:before {
 .uselessButton {
   margin-top: auto;
   margin-bottom: auto;
-  width: 100px;
-  height: 20px;
+  margin-left: 5px;
+  width: 80px;
+  height: 23px;
+  border-radius: 5px;
 }
 
 .userGreeting {
@@ -243,11 +250,12 @@ input:checked + .slider:before {
 }
 
 .userImage {
-  height: 25px;
-  width: 25px;
+  height: 27px;
+  width: 27px;
   object-fit: cover;
   border-radius: 50%;
-  margin: auto 10px auto 5px;
+  margin: -6px 5px -4.5px -8px;
+  vertical-align: -8%;;
 }
 
 ul {
@@ -276,18 +284,43 @@ ul li:hover .logout {
   justify-content: center;
   padding: 5px;
   transform: translate(5px, 5px);
-  width: 100px;
+  width: fit-content;
+  padding-left: 10px;
+  padding-right: 10px;
   height: 30px;
   opacity: 1;
   visibility: visible;
   transition: 200ms;
+  border-radius: 15px;
 }
 
 .userleft {
   position: absolute;
-  top: 0%;
+  height: 25px;
+  width: fit-content;
+  top: 5px;
   left: 0%;
   padding-left: 10px;
+  padding-right: 5px;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 20px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 5px;
+  vertical-align: 100%;
+}
+
+.Dark .userleft {
+  background-color: #2f3033;
+  border-color: #535458;
+}
+
+.Light .userleft {
+  background-color: rgb(243, 240, 240);
+  border-color: rgb(202, 200, 200);
 }
 
 .userright {
@@ -315,10 +348,12 @@ ul li:hover .logout {
 
 .Light .uselessButton {
   background-color: rgb(235, 235, 235);;
+  border-color: rgb(202, 200, 200);
 }
 
 .Light .uselessButton:hover {
-  background-color: rgb(255, 255, 255);;
+  background-color: rgb(255, 255, 255);
+  border-color: rgb(202, 200, 200);
 }
 
 .Light .logout {
