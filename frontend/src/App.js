@@ -127,19 +127,13 @@ export function IsLoggedIn() {
   }
   else {
     return <>
-      <ul className="userleft">
-        <li>
-          <img src={user.image} className='userImage'/>
-          <span>{user.display_name}</span>
-            <ul>
-              <li className='userGreeting'>
-              <button className="logout" onClick={Logout}
-              // uselessButton class removed
-              >Log Out</button>
-              </li>
-            </ul>
-        </li>        
-    </ul>
+      <button className="userleft">
+        <img src={user.image} className='userImage'/>
+        <span>{user.display_name}</span>
+          <button className="logout" onClick={Logout}>
+          Log Out
+          </button>
+      </button>
     </>
   }
 }
@@ -291,14 +285,14 @@ export function InputBar() {
         <div>
           <div className="SearchBar">
             <form onSubmit={submitPlaylistLink} className="inputForm">
-              <input placeholder='Spotify Link (https://open.spotify.com/playlist/etc...)' type="text" name='PL-URL' required className="inputForm" onChange={
+              <input placeholder='Spotify Link (https://open.spotify.com/playlist/etc...)' type="text" name='PL-URL' required className="inputForm inputformline" onChange={
                 e => updateFormData(e.target.value.trim())}/>
               <input type="submit" className="uselessButton" value="Submit"/>
             </form>
           </div>
           <div className="SearchBar">
             <form onSubmit={e => e.preventDefault()} className="inputForm">
-              <input placeholder='Insert Download Directory' type="text" name='DL-path' required className="inputForm" onChange={
+              <input placeholder='Insert Download Directory' type="text" name='DL-path' required className="inputForm inputformline" onChange={
                 e => updateDownloadPath(e.target.value)}
                   value={downloadPath}
                 />

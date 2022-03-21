@@ -63,7 +63,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  font-size: calc(10px + 2vmin);
+  font-size: 25px;
   padding-top: 50px;
 }
 
@@ -101,9 +101,37 @@
   width: 90%;
   display: flex;
   justify-content: space-between;
-  height: 16px;
+  height: 18px;
   margin-bottom: 8px;
   border-radius: 5px;
+}
+
+.inputformline {
+  border: solid 1px;
+}
+
+.Dark .inputformline {
+  border-color: #535458;
+}
+
+/* .Dark .inputformline:active {
+  border-color: #7b7c81;
+  border-width: 2px;
+} */
+
+.Light .inputformline {
+  border-color: #c2c3c7;
+  border-width: 1px;
+}
+
+/* .Light .inputformline:active {
+  border-color: #d7d8df;
+  border-width: 2px;
+} */
+
+:focus-visible {
+  border-width: 2px;
+  outline: none;
 }
 
 .Table {
@@ -124,11 +152,12 @@
   margin-left: auto;
   margin-right: auto;
   border-radius: 7px;
-  background-color: rgb(rgb(118, 121, 146), green, blue);
+  background-color: #9bb3db;
+  border: solid 1px;
 }
 
 .DownloadButton:hover {
-  background-color: rgb(rgb(96, 139, 96), green, blue);
+  background: #b8cdf1;
 }
 
 .CancelDownloadButton {
@@ -138,10 +167,11 @@
   margin-right: auto;
   border-radius: 7px;
   background-color: crimson;
+  border: solid 1px;
 }
 
 .CancelDownloadButton:hover {
-  background-color: brown;
+  background-color: rgb(245, 66, 101);
 }
 
 .checkmark {
@@ -237,6 +267,9 @@ input:checked + .slider:before {
   width: 80px;
   height: 23px;
   border-radius: 5px;
+  border: solid 1px;
+  box-sizing: border-box;
+  appearance: none;
 }
 
 .userGreeting {
@@ -254,36 +287,26 @@ input:checked + .slider:before {
   width: 27px;
   object-fit: cover;
   border-radius: 50%;
-  margin: -6px 5px -4.5px -8px;
+  margin: -5px 5px -5px -10px;
   vertical-align: -8%;;
-}
-
-ul {
-  list-style-type: none;
-  margin-block: 0;
-  padding-inline-start: 0;
-
-}
-
-li>a {
-  text-decoration: none;
-  color: darkgrey;
+  padding-top: -px;
 }
 
 .logout {
   opacity: 0;
   visibility: hidden;
   position: absolute;
+  border: solid 1px;
 }
 
-ul li:hover .logout {
+.userleft:hover .logout {
   display: block;
   position: absolute;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 5px;
-  transform: translate(5px, 5px);
+  transform: translate(5px, 25px);
   width: fit-content;
   padding-left: 10px;
   padding-right: 10px;
@@ -295,8 +318,12 @@ ul li:hover .logout {
 }
 
 .userleft {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  vertical-align: 50%;
   position: absolute;
-  height: 25px;
+  height: 32px;
   width: fit-content;
   top: 5px;
   left: 0%;
@@ -306,9 +333,6 @@ ul li:hover .logout {
   border-width: 2px;
   border-radius: 20px;
   font-size: 16px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
   padding-top: 5px;
   vertical-align: 100%;
 }
@@ -320,7 +344,7 @@ ul li:hover .logout {
   top: 5px;
   left: 0%;
   padding-left: 10px;
-  padding-right: 5px;
+  padding-right: 8px;
   padding-top: 2px;
   padding-bottom: 3px;
   border-style: solid;
@@ -338,6 +362,12 @@ ul li:hover .logout {
 .Dark .userleft {
   background-color: #2f3033;
   border-color: #535458;
+  color: gainsboro
+}
+
+.Dark .userleft:hover {
+  background-color: #444549;
+  border-color: #535458;
 }
  
 .Dark .Login {
@@ -347,12 +377,32 @@ ul li:hover .logout {
   text-decoration: none;
 }
 
+.Dark .Login:hover {
+  background-color: #444549;
+  border-color: #535458;
+  color: gainsboro;
+  text-decoration: none;
+}
+
 .Light .userleft {
   background-color: rgb(243, 240, 240);
+  border-color: rgb(202, 200, 200);
+  color: darkblue
+}
+
+.Light .userleft:hover {
+  background-color: rgb(253, 250, 250);
   border-color: rgb(202, 200, 200);
 }
 
 .Light .Login {
+  background-color: rgb(243, 240, 240);
+  border-color: rgb(202, 200, 200);
+  color: darkblue;
+  font-style: normal;
+  text-decoration: none;
+}
+.Light .Login:hover {
   background-color: rgb(243, 240, 240);
   border-color: rgb(202, 200, 200);
   color: darkblue;
@@ -369,23 +419,39 @@ ul li:hover .logout {
 
 .Dark .uselessButton {
   background-color: #5d6168;
+  color: gainsboro;
+  border-color: #9c9da3;
 }
 
 .Dark .uselessButton:hover {
   background-color: #777c85;
 }
 
+.Dark .uselessButton:active {
+  background-color: #777c85;
+  border-color: #b5b6bb;
+  border-width: 2px;
+}
+
 .Dark .logout {
   background-color: #5d6168;
+  border-color: #535458;
+  color: gainsboro
 }
 
 .Dark .logout:hover {
   background-color: #777c85;
 }
 
+.Dark.logout:active {
+  border-color: #b5b6bb;
+  border-width: 2px;
+}
+
 .Light .uselessButton {
   background-color: rgb(235, 235, 235);;
   border-color: rgb(202, 200, 200);
+  color: darkblue
 }
 
 .Light .uselessButton:hover {
@@ -393,8 +459,16 @@ ul li:hover .logout {
   border-color: rgb(202, 200, 200);
 }
 
+.Light .uselessButton:active {
+  border-color: rgb(129, 128, 128);
+  border-width: 2px
+  /* background-color: red; */
+}
+
 .Light .logout {
-  background-color: rgb(235, 235, 235);;
+  background-color: rgb(235, 235, 235);
+  border-color: rgb(202, 200, 200);
+  color: darkblue
 }
 
 .Light .logout:hover {
