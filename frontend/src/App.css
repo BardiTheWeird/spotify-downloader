@@ -101,8 +101,8 @@ input::placeholder {
   width: 740px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 20px;
-  padding-right: 20px;
+  /* padding-left: 40px; */
+  /* padding-right: 20px; */
 }
 
 .inputForm {
@@ -504,7 +504,8 @@ input:checked + .slider:before {
 }
 
 .symbolTranslate {
-  pointer-events: none
+  pointer-events: none;
+  padding-left: 45px;
 }
 
 .symbolTranslate {
@@ -512,12 +513,12 @@ input:checked + .slider:before {
 }
 
 .Light .symbolTranslate {
-  transform: translate(-17px, -21px);
+  transform: translate(-38px, -21px);
   color: gainsboro
 }
 
 .Dark .symbolTranslate {
-  transform: translate(17px, -21px);
+  transform: translate(-4px, -21px);
   color: #343942
 }
 
