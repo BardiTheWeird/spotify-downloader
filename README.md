@@ -14,7 +14,7 @@ An application for downloading of MP3 tracks using Spotify playlist data.
   - [How to work with](#how-to-work-with)
     - [Query](#query)
     - [Directory Choice](#directory-choice)
-    - [Downloaded](#downloaded)
+    - [Download](#downloaded)
     - [Cancel Download](#cancel-download)
 
 
@@ -44,7 +44,7 @@ To chose a Directory for a download User will have 2 options:
  - Insert a directory into the field.
  - Choose a directory using "Browse" button.
 
-### Downloaded
+### Download
 
 To download tracks from the generated table User will need to choose the tracks User needs using the selectors. By default all tracks are chosen. To unchoose or choose all User can click on "All" selector.
 
