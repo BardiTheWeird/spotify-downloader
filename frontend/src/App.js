@@ -33,9 +33,8 @@ async function authorizedFetch(input, init) {
         return null;
       }
 
-      const refreshResponse = await fetch('https://accounts.spotify.com/api/token', {
-        'grant_type': 'refresh_token',
-        'refresh_token': refreshToken,
+      const refreshResponse = await fetch(`https://accounts.spotify.com/api/token?grant_type=refresh_token&refresh_token=${refreshToken}&client_id=63d55a793f9c4a9e8d5aacba30069a23`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -52,7 +51,7 @@ async function authorizedFetch(input, init) {
     return response;
   }
 
-  const result = innerFunction();
+  const result = await innerFunction();
   // clean up token if they're invalid
   if (result === null) {
     localStorage.setItem('access token', '');
@@ -129,7 +128,7 @@ export function IsLoggedIn() {
     return <>
       <button className="userleft">
         <img src={user.image} className='userImage'/>
-        <span>{user.display_name}</span>
+        <span>{user.display_name}</span><i className="fa-solid fa-caret-down arrowdown"></i>
           <button className="logout" onClick={Logout}>
           Log Out
           </button>
@@ -211,11 +210,18 @@ export function App() {
           || <BaseUrlContex.Provider value={baseUrl}>
           <IsLoggedInContext.Provider value={[isUserLogged, updateIsUserLogged]}>
             <div className="userright">
-              <div  className='App-header-info'>Light/Dark</div>
               <label className="switch">
-                <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}></input>
+                <input type="checkbox" onChange={e => updateisDark(!isDark)} checked={!isDark}>
+                </input>
                 <span className="slider round"></span>
               </label>
+              <div className='App-header-info symbolTranslate'>
+                { 
+                  LightDark() == "Light" &&
+                     <i className="fa-solid fa-moon"></i>
+                  || <i className="fa-solid fa-sun"></i>
+                }
+              </div>
             </div>
             
             <header className="App-header">
@@ -244,9 +250,7 @@ export function AuthCallback() {
       method: "POST",
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
-    console.log('response:', response);
     const responseBody = await response.json();
-    console.log('responseBody:', responseBody);
 
     localStorage.setItem('access token', responseBody.access_token || '');
     localStorage.setItem('refresh token', responseBody.refresh_token || '');
@@ -266,7 +270,6 @@ export function InputBar() {
 
   const submitPlaylistLink = async (e) => {
     e.preventDefault();
-    console.log('IsLoggedIn:', IsLoggedIn);
     if (!isUserLogged) {
       alert('Log in, please');
       return;
@@ -275,8 +278,25 @@ export function InputBar() {
     if (response === null) {
       alert("YOU STILL DON'T HANDLE UNAUTHORIZED PLAYLIST SUBMIT (or your (refresh) tokens are ded, idk)");
     }
-    let playlist = await response.json();
-    updatePlaylist(playlist);
+
+    switch (response.status) {
+      case 200:
+          let playlist = await response.json();
+          updatePlaylist(playlist);
+        break;
+      case 400:
+        alert('Bad Spotify link');
+        break;
+      case 401:
+        alert('Log in, please');
+        break;
+      case 404:
+        alert('No playlist or album with such id');
+        break;
+      case 429:
+      case 500:
+        alert('Somethign went wrong');
+    }
   }
 
   return (
@@ -476,8 +496,13 @@ export function PlaylistTable({playlist, downloadPath}) {
     <>
       <div className='inline-buttons'>
         <button className='DownloadButton' onClick={() => {
-            SwitchIsDownloading();
-            DownloadSelected();
+            if (!downloadPath) {
+              return alert("Please choose directory using the Browse button")
+            }
+            else {
+              SwitchIsDownloading();
+              DownloadSelected();
+            }
           }
         }
         disabled={isDownloading.current}
@@ -533,7 +558,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                 <td><img src={track.album_image}
                 height="30px"/>
                 </td>
-                <td>{track.artists}</td>
+                <td>{track.artists.join(', ')}</td>
                 <td>{track.title}</td>
                 <td>{track.album_title}</td>
                 <td>{track.status}</td>

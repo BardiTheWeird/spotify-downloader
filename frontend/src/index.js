@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import { App, IsLoggedIn } from './App';
+import { App } from './App';
 import { BrowserRouter } from 'react-router-dom';
+import './css/all.min.css'
 
 ReactDOM.render(
   <React.StrictMode>

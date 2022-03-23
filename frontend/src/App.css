@@ -30,6 +30,14 @@
   color: gainsboro;
 }
 
+input[type="text"], textarea {
+  padding-left: 3px;
+}
+
+input::placeholder {
+  padding-left: 2px;
+}
+
 .Dark input::placeholder {
   color: rgb(177, 175, 175);
 }
@@ -152,12 +160,22 @@
   margin-left: auto;
   margin-right: auto;
   border-radius: 7px;
-  background-color: #9bb3db;
+  background-color: #c0cfe9;
   border: solid 1px;
+  color: #324fe2;
 }
 
 .DownloadButton:hover {
-  background: #b8cdf1;
+  background: #d7e0f0;
+}
+
+.DownloadButton:active {
+  background: #9bb3db;
+  border-color: #324fe2;
+}
+
+.Dark .DownloadButton {
+  background: gainsboro;
 }
 
 .CancelDownloadButton {
@@ -166,12 +184,22 @@
   margin-left: auto;
   margin-right: auto;
   border-radius: 7px;
-  background-color: crimson;
+  background-color: #c0cfe9;
   border: solid 1px;
+  color: crimson;
 }
 
 .CancelDownloadButton:hover {
-  background-color: rgb(245, 66, 101);
+  background: #d7e0f0;
+}
+
+.CancelDownloadButton:active {
+  background: #9bb3db;
+  border-color: crimson;
+}
+
+.Dark .CancelDownloadButton {
+  background: gainsboro;
 }
 
 .checkmark {
@@ -412,7 +440,7 @@ input:checked + .slider:before {
 
 .userright {
   position: absolute;
-  top: 0%;
+  top: 5px;
   right: 0%;
   padding-right: 10px;
 }
@@ -473,4 +501,26 @@ input:checked + .slider:before {
 
 .Light .logout:hover {
   background-color: rgb(255, 255, 255);;
+}
+
+.symbolTranslate {
+  pointer-events: none
+}
+
+.symbolTranslate {
+  transform: translate(0px, -21px);
+}
+
+.Light .symbolTranslate {
+  transform: translate(-17px, -21px);
+  color: gainsboro
+}
+
+.Dark .symbolTranslate {
+  transform: translate(17px, -21px);
+  color: #343942
+}
+
+.arrowdown {
+  margin-left: 2px;
 }

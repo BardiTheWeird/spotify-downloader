@@ -31,7 +31,7 @@ Everything starts with /api/v1
 	- Returns a Playlist entity for a specified Spotify Playlist Id or Spotify Playlist Link. When both `id` and `link` are provided, `id` takes precedence.
 	- Status codes:
 		- 200 + playlist payload
-		- 400 + error payload => "id" is empty
+		- 400 + error payload => invalid link or "id" is empty
 		- 401 => not authorized (maybe?)
 		- 404 => no playlist with such id
 		- 429 => too many requests
