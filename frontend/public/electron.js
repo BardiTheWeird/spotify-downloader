@@ -3,6 +3,10 @@ const {spawn} = require('child_process');
 const path = require('path');
 const kill = require('tree-kill');
 const isDev = require('electron-is-dev');
+const os = require('os');
+
+const isWin = os.platform() === 'win32';
+const excutableExtension = isWin && '.exe' || '';
 
 const resourcesDir = process.resourcesPath;
 
@@ -13,8 +17,8 @@ const appUrl = isDev
   ? 'http://localhost:3000'
   : 'app://-';
 const backendExecutablePath = isDev
-  ? '../backend/build/backend.exe'
-  : path.join(resourcesDir, 'backend.exe');
+  ? '../backend/build/backend' + excutableExtension
+  : path.join(resourcesDir, 'backend' + excutableExtension);
 
 let backendStatus;
 const backend = spawn(backendExecutablePath);
