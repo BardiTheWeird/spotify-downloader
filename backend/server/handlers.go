@@ -14,6 +14,7 @@ import (
 	"spotify-downloader/songlink"
 	"spotify-downloader/spotify"
 	"strings"
+	"time"
 )
 
 func (s *Server) handlePlaylist() http.HandlerFunc {
@@ -111,29 +112,40 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 			return
 		}
 
-		downloadLink, exists := clihelpers.GetYoutubeDownloadLink(youtubeLink)
-		if !exists {
-			requesthelpers.WriteJsonResponse(rw,
-				http.StatusNotFound,
-				requesthelpers.CreateErrorPayload(
-					"No download link found for youtube link "+youtubeLink,
-				),
-			)
-			return
-		}
+		var downloadStatus downloader.DownloadStartStatus
+		for i := 0; i < 3; i++ {
+			downloadLink, exists := clihelpers.GetYoutubeDownloadLink(youtubeLink)
+			if !exists {
+				requesthelpers.WriteJsonResponse(rw,
+					http.StatusNotFound,
+					requesthelpers.CreateErrorPayload(
+						"No download link found for "+youtubeLink,
+					),
+				)
+				return
+			}
 
-		downloadStatus := s.DownloadHelper.StartDownload(
-			downloadRequest.Id,
-			downloadRequest.Folder,
-			downloadRequest.Filename,
-			downloadLink,
-			clihelpers.FfmpegMetadata{
-				Title:  downloadRequest.Title,
-				Artist: downloadRequest.Artist,
-				Album:  downloadRequest.Album,
-				Image:  downloadRequest.Image,
-			},
-			s.FeatureFfmpegInstalled)
+			downloadStatus = s.DownloadHelper.StartDownload(
+				downloadRequest.Id,
+				downloadRequest.Folder,
+				downloadRequest.Filename,
+				downloadLink,
+				clihelpers.FfmpegMetadata{
+					Title:  downloadRequest.Title,
+					Artist: downloadRequest.Artist,
+					Album:  downloadRequest.Album,
+					Image:  downloadRequest.Image,
+				},
+				s.FeatureFfmpegInstalled)
+
+			if downloadStatus != downloader.DStartErrorInvalidUrl {
+				break
+			}
+
+			if i < 2 {
+				time.Sleep(time.Second * 3)
+			}
+		}
 
 		switch downloadStatus {
 		case downloader.DStartErrorCreatingFile:
@@ -142,6 +154,8 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 					"could not create a file at "+filepath.Join(downloadRequest.Folder, downloadRequest.Filename),
 				),
 			)
+		case downloader.DStartErrorInvalidUrl:
+			rw.WriteHeader(http.StatusRequestTimeout)
 		case downloader.DStartErrorSendingRequest, downloader.DStartErrorReadingContentLength:
 			rw.WriteHeader(http.StatusInternalServerError)
 		case downloader.DStartOk:

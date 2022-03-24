@@ -59,6 +59,7 @@ Everything starts with /api/v1
 		- 404 =>
 			- no youtube link for song with such id
 			- no download link for youtube link (youtube api and/or youtube-dl weirdness)
+		- 408 => can't get a valid url at the moment. Client can try again (yeah, it's this bad)
 		- 429 => songlink too many requests
 		- 500 => songlink/download error sending request
 - `GET /download/status?id={trackId}`

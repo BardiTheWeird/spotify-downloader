@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -21,6 +22,7 @@ type DownloadStartStatus int
 
 const (
 	DStartOk DownloadStartStatus = iota
+	DStartErrorInvalidUrl
 	DStartErrorCreatingFile
 	DStartErrorSendingRequest
 	DStartErrorReadingContentLength
@@ -37,6 +39,57 @@ func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url st
 	filepathNoExt := filepath.Join(downloadFolder, filename)
 	filepathTmp := filepathNoExt + ".tmp"
 
+	downloadTrack := func(out *os.File) (bool, error) {
+		cancelled := false
+
+		var size int
+		resp, err := http.Get(url)
+		if err != nil {
+			ch <- DStartErrorSendingRequest
+			return false, err
+		}
+		defer resp.Body.Close()
+
+		size, err = strconv.Atoi(resp.Header.Get("Content-Length"))
+		if err != nil || size == 0 {
+			ch <- DStartErrorInvalidUrl
+			return false, fmt.Errorf("invalid url")
+		}
+
+		log.Println("download at", filepathNoExt, "started")
+		ch <- DStartOk
+
+		ctx, fn := context.WithCancel(context.Background())
+
+		d.downloadEntries.Store(
+			trackId,
+			models.DownloadEntry{
+				TotalBytes:       size,
+				Status:           models.DownloadInProgress,
+				FilepathNoExt:    filepathNoExt,
+				CancellationFunc: fn,
+			},
+		)
+
+		readerWithCancellation := readerWithCancellationFunc(func(p []byte) (n int, err error) {
+			select {
+			case <-ctx.Done():
+				cancelled = true
+				return 0, io.EOF
+			default:
+				return resp.Body.Read(p)
+			}
+		})
+
+		bytesWritten, err := io.Copy(out, readerWithCancellation)
+
+		fmt.Println("download at", filepathNoExt, "was finished:\n",
+			"\tbytesWritten:", bytesWritten,
+			"\n\terr:", err)
+
+		return cancelled, err
+	}
+
 	go func() {
 		cancelled := false
 		func() {
@@ -47,59 +100,14 @@ func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url st
 			}
 			defer out.Close()
 
-			headResp, err := http.Head(url)
-			if err != nil {
-				ch <- DStartErrorSendingRequest
-				return
-			}
-			defer headResp.Body.Close()
+			cancelled, err = downloadTrack(out)
 
-			size, err := strconv.Atoi(headResp.Header.Get("Content-Length"))
-			if err != nil {
-				ch <- DStartErrorReadingContentLength
-				return
-			}
-
-			resp, err := http.Get(url)
-			if err != nil {
-				ch <- DStartErrorSendingRequest
-				return
-			}
-			defer resp.Body.Close()
-
-			log.Println("download at", filepathNoExt, "started")
-			ch <- DStartOk
-
-			ctx, fn := context.WithCancel(context.Background())
-
-			d.downloadEntries.Store(
-				trackId,
-				models.DownloadEntry{
-					TotalBytes:       size,
-					Status:           models.DownloadInProgress,
-					FilepathNoExt:    filepathNoExt,
-					CancellationFunc: fn,
-				},
-			)
-
-			_, err = io.Copy(out, readerWithCancellationFunc(func(p []byte) (n int, err error) {
-				select {
-				case <-ctx.Done():
-					cancelled = true
-					return 0, io.EOF
-				default:
-					return resp.Body.Read(p)
-				}
-			}))
+			out.Close()
 
 			entry, ok := d.downloadEntries.Load(trackId)
 			if !ok {
-				entry = models.DownloadEntry{
-					TotalBytes: size,
-				}
+				entry = models.DownloadEntry{}
 			}
-
-			out.Close()
 
 			switch {
 			case cancelled:
@@ -108,6 +116,7 @@ func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url st
 			case err != nil:
 				log.Println("download at", filepathNoExt, "failed:", err)
 				entry.Status = models.DownloadFailed
+				os.Remove(filepathTmp)
 			default:
 				log.Println("download at", filepathNoExt, "was finished")
 

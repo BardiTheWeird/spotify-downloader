@@ -457,6 +457,7 @@ export function PlaylistTable({playlist, downloadPath}) {
         case 404:
           track.status = "No YouTube Link";
           break;
+        case 408:
         case 500:
           track.status = "Download Error";
           break;
