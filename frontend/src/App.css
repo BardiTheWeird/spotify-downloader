@@ -525,3 +525,25 @@ input:checked + .slider:before {
 .arrowdown {
   margin-left: 2px;
 }
+
+.Preview {
+  /* visibility: hidden; */
+  opacity: 0.7;
+  font-size: 20px;
+  color: gainsboro;
+  display: block;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  transform: translate(4px, 4px);
+}
+
+.Preview:hover {
+  /* visibility: visible; */
+  /* display: flex; */
+  opacity: 1;
+}
+
+.PreviewNone {
+  visibility: hidden;
+}

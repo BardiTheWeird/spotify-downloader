@@ -1,4 +1,4 @@
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import {
@@ -491,6 +491,13 @@ export function PlaylistTable({playlist, downloadPath}) {
       method: 'POST',
     })
   }
+    /*
+    
+    here is some shit happaning to play preview of the track
+
+    */
+
+  let playPreview = true
 
   return (
     <>
@@ -555,7 +562,12 @@ export function PlaylistTable({playlist, downloadPath}) {
                 }
                 disabled={isDownloading.current}
                 /></td>
-                <td><img src={track.album_image}
+                <td onMouseEnter={(e) => {e.target.style = "Preview"}} onMouseLeave={(e) => {e.target.style = "PreviewNone"}}>{
+                  playPreview == true &&
+                  <i className="fa-solid fa-play Preview"></i> ||
+                  <i className="fa-solid fa-pause Preview"></i>
+                }
+                <img src={track.album_image}
                 height="30px"/>
                 </td>
                 <td>{track.artists.join(', ')}</td>
