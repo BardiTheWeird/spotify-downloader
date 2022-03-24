@@ -8,6 +8,8 @@ import {
 } from "react-router-dom";
 const {ipcRenderer} = window.require('electron');
 
+const illegalFilenameChars = ['<', '>', ':', '"', '\\', '/', '|', '?', '*'];
+
 export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 
 const BaseUrlContex = React.createContext();
@@ -241,27 +243,25 @@ export function App() {
                   </p>                
                   <body className='infoBody'>
                   <div className='infotext'>Please notice: for application to work properly you need to install:</div>
-                  <div>
-                    <i className="fa-solid fa-download"></i>
-                    <> </>
+                  <div className='infotext'>
+                    <i className="fa-solid fa-download infotext"></i>
                     <a href='https://youtube-dl.org/' className='link'>youtube-dl</a>
                   </div>
-                  <div>
-                    <i className="fa-solid fa-download"></i>
-                    <> </>
+                  <div className='infotext'>
+                    <i className="fa-solid fa-download infotext"></i>
                     <a href='https://www.ffmpeg.org/download.html' className='link'>FFMPEG</a>
                   </div>
                   <div className='infotext'>
-                    Prior to begin the search of a playlist, please login using a button in upper-left corner. You can log out any time you want using the dropping button under the profile name.
+                    Before searching of a playlist, please login using a button in upper-left corner. You can log out any time you want using the dropping button under the profile name.
                   </div>
                   <div className='infotext'>
-                    Insert a copied link to the Spotify playlist or album into the upper submittion field and click Submit button. If link is incorrect you'll receive a message from the application.
+                    Insert a copied link to the Spotify playlist or album into the upper submission field and click Submit button. If the link is incorrect you'll receive a message from the application.
                   </div>
                   <div className='infotext'>
-                    Before the download User needs to either insert a directory into the second submittion field or use the Browse button to select a desired folder.
+                    Before the download, either insert a directory into the second submission field or use the Browse button to select a desired folder.
                   </div>
                   <div className='infotext'>
-                    After the selection of tracks to download by the means of selector boxes, the download process will begin on click of the Download Selected button. While in process it can be cancelled by the respective button. Dwonload status will be displayed in the Status column.
+                    Select tracks you want to download using checkboxes on the left; begin the download by clicking the Download Selected button. While in process it can be cancelled by the respective button. Download status will be displayed in the Status column.
                   </div>
                   </body>
                   <button onClick={() => updateFAQStatus(false)} className='uselessButton'>Goi It</button>
@@ -419,14 +419,25 @@ export function PlaylistTable({playlist, downloadPath}) {
       if (!downloadFolder) {
         downloadFolder = "./userDownloads/"
       }
+
+      let filename = `${track.artists.join(', ')} - ${track.title}`;
+      filename = filename.split('').map(char => {
+      if (illegalFilenameChars.includes(char)) {
+          return "_"
+      }
+      else {
+          return char
+      }
+      }).join('');
+
       let downloadResponse = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
           id: track.id,
           folder: downloadPath,
-          filename: `${track.artists} - ${track.title}`,
+          filename: filename,
           title: track.title,
-          artist: track.artists.join(' '),
+          artist: track.artists.join(', '),
           album: track.album_title,
           image: track.album_image
         }),
