@@ -414,7 +414,10 @@ export function PlaylistTable({playlist, downloadPath}) {
           break;
         case 500:
           track.status = "Download Error";
-          break;           
+          break;
+        default:
+          track.status = "Unexpected status";
+          break;
       }
       
       const copiedTracks = [...tracks];
@@ -427,11 +430,7 @@ export function PlaylistTable({playlist, downloadPath}) {
         const copiedTracks = [...tracks];
         const track = copiedTracks[trackIndex];
 
-        let downloadFolder = downloadPath;
-        if (!downloadFolder) {
-          downloadFolder = "./userDownloads/"
-        }
-        const getStatusResponse = await fetch(`${baseUrl}/download/status?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`);
+        const getStatusResponse = await fetch(`${baseUrl}/download/status?id=${track.id}`);
         const downloadEntry = await getStatusResponse.json();
 
         switch (downloadEntry.status) {
@@ -453,6 +452,9 @@ export function PlaylistTable({playlist, downloadPath}) {
             break;
           case 5: 
             copiedTracks[trackIndex].status = 'Cancelled'
+            break;
+          default:
+            copiedTracks[trackIndex].status = 'Unexpected Status'
             break;
         }
         updateTracks(copiedTracks);
@@ -486,7 +488,7 @@ export function PlaylistTable({playlist, downloadPath}) {
     if (!downloadFolder) {
       downloadFolder = "./userDownloads/"
     }
-    let url = `${baseUrl}/download/cancel?folder=${downloadFolder}&filename=${track.artists} - ${track.title}`;
+    let url = `${baseUrl}/download/cancel?id=${track.id}`;
     let downloadResponse = await fetch(url, {
       method: 'POST',
     })

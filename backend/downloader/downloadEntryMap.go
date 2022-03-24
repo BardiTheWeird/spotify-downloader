@@ -9,12 +9,12 @@ type downloadEntrySyncMap struct {
 	downloadEntries sync.Map
 }
 
-func (m *downloadEntrySyncMap) Store(key string, value models.DownloadEntry) {
-	m.downloadEntries.Store(key, value)
+func (m *downloadEntrySyncMap) Store(trackId string, value models.DownloadEntry) {
+	m.downloadEntries.Store(trackId, value)
 }
 
-func (m *downloadEntrySyncMap) Load(key string) (models.DownloadEntry, bool) {
-	val, ok := m.downloadEntries.Load(key)
+func (m *downloadEntrySyncMap) Load(trackId string) (models.DownloadEntry, bool) {
+	val, ok := m.downloadEntries.Load(trackId)
 	if !ok {
 		return models.DownloadEntry{}, ok
 	}

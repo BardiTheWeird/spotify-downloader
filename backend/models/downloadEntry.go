@@ -18,5 +18,6 @@ type DownloadEntry struct {
 	DownloadedBytes int            `json:"downloaded_bytes,omitempty"`
 	Status          DownloadStatus `json:"status"`
 
+	FilepathNoExt    string             `json:"-"`
 	CancellationFunc context.CancelFunc `json:"-"`
 }
