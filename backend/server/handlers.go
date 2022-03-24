@@ -123,6 +123,7 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 		}
 
 		downloadStatus := s.DownloadHelper.StartDownload(
+			downloadRequest.Id,
 			downloadRequest.Folder,
 			downloadRequest.Filename,
 			downloadLink,
@@ -151,16 +152,12 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 
 func (s *Server) handleDownloadStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		folder, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("folder", rw, r)
-		if !ok {
-			return
-		}
-		filename, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("filename", rw, r)
+		trackId, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("id", rw, r)
 		if !ok {
 			return
 		}
 
-		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(folder, filename)
+		downloadEntry, responseStatus := s.DownloadHelper.GetDownloadStatus(trackId)
 		switch responseStatus {
 		case downloader.DStatusNotFound:
 			rw.WriteHeader(http.StatusNotFound)
@@ -174,16 +171,12 @@ func (s *Server) handleDownloadStatus() http.HandlerFunc {
 
 func (s *Server) handleDownloadCancel() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		folder, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("folder", rw, r)
-		if !ok {
-			return
-		}
-		filename, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("filename", rw, r)
+		trackId, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("id", rw, r)
 		if !ok {
 			return
 		}
 
-		switch status := s.DownloadHelper.CancelDownload(folder, filename); status {
+		switch status := s.DownloadHelper.CancelDownload(trackId); status {
 		case downloader.DCancelNotFound:
 			rw.WriteHeader(http.StatusNotFound)
 		case downloader.DCancelNotInProgress:

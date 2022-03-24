@@ -61,8 +61,7 @@ Everything starts with /api/v1
 			- no download link for youtube link (youtube api and/or youtube-dl weirdness)
 		- 429 => songlink too many requests
 		- 500 => songlink/download error sending request
-- `GET /download/status?folder={folder_path}&filename={file_name}`
-	- Returns a DownloadEntry of download at `folder_path/file_name`
+- `GET /download/status?id={trackId}`
 	- Response Model:
 ```
 	type DownloadEntry = {
@@ -85,7 +84,7 @@ Everything starts with /api/v1
 		- 400 + payload error => path not provided
 		- 404 => no download at {path}
 		- 500 => can't stat file OR unhandled GetDownloadStatusStatus
-- `POST /download/cancel?folder={folder_path}&filename={file_name}`
+- `POST /download/cancel?id={trackId}`
 	- Cancels a download at `folder_path/file_name`
 	- Status codes:
 		- 204

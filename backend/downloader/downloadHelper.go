@@ -13,8 +13,8 @@ import (
 )
 
 type DownloadHelper struct {
-	// filepath -> models.DownloadEntry
-	DownloadEntries downloadEntrySyncMap
+	// trackId -> models.DownloadEntry
+	downloadEntries downloadEntrySyncMap
 }
 
 type DownloadStartStatus int
@@ -32,7 +32,7 @@ func (rf readerWithCancellationFunc) Read(p []byte) (n int, err error) {
 	return rf(p)
 }
 
-func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, metadata clihelpers.FfmpegMetadata, convertToMp3 bool) DownloadStartStatus {
+func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url string, metadata clihelpers.FfmpegMetadata, convertToMp3 bool) DownloadStartStatus {
 	ch := make(chan DownloadStartStatus)
 	filepathNoExt := filepath.Join(downloadFolder, filename)
 	filepathTmp := filepathNoExt + ".tmp"
@@ -72,11 +72,12 @@ func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, met
 
 			ctx, fn := context.WithCancel(context.Background())
 
-			d.DownloadEntries.Store(
-				filepathNoExt,
+			d.downloadEntries.Store(
+				trackId,
 				models.DownloadEntry{
 					TotalBytes:       size,
 					Status:           models.DownloadInProgress,
+					FilepathNoExt:    filepathNoExt,
 					CancellationFunc: fn,
 				},
 			)
@@ -91,7 +92,7 @@ func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, met
 				}
 			}))
 
-			entry, ok := d.DownloadEntries.Load(filepathNoExt)
+			entry, ok := d.downloadEntries.Load(trackId)
 			if !ok {
 				entry = models.DownloadEntry{
 					TotalBytes: size,
@@ -112,7 +113,7 @@ func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, met
 
 				if convertToMp3 {
 					entry.Status = models.DownloadConvertationInProgress
-					d.DownloadEntries.Store(filepathNoExt, entry)
+					d.downloadEntries.Store(trackId, entry)
 
 					err := clihelpers.FfmpegConvert(filepathTmp, filepathNoExt+".mp3", metadata)
 					if err != nil {
@@ -126,7 +127,7 @@ func (d *DownloadHelper) StartDownload(downloadFolder, filename, url string, met
 				}
 			}
 
-			d.DownloadEntries.Store(filepathNoExt, entry)
+			d.downloadEntries.Store(trackId, entry)
 		}()
 
 		if cancelled {
@@ -145,15 +146,14 @@ const (
 	DStatusError
 )
 
-func (d *DownloadHelper) GetDownloadStatus(downloadFolder, filename string) (models.DownloadEntry, GetDownloadStatusStatus) {
-	filepathNoExt := filepath.Join(downloadFolder, filename)
-	entry, ok := d.DownloadEntries.Load(filepathNoExt)
+func (d *DownloadHelper) GetDownloadStatus(trackId string) (models.DownloadEntry, GetDownloadStatusStatus) {
+	entry, ok := d.downloadEntries.Load(trackId)
 	if !ok {
 		return models.DownloadEntry{}, DStatusNotFound
 	}
 
 	if entry.Status == models.DownloadInProgress {
-		filepathTmp := filepathNoExt + ".tmp"
+		filepathTmp := entry.FilepathNoExt + ".tmp"
 		file, err := os.Open(filepathTmp)
 		if err != nil {
 			log.Printf("Error opening file %s: %s", filepathTmp, err)
@@ -181,9 +181,8 @@ const (
 	DCancelNotInProgress
 )
 
-func (d *DownloadHelper) CancelDownload(folder, filename string) CancelDownloadStatus {
-	filepathNoExt := filepath.Join(folder, filename)
-	entry, ok := d.DownloadEntries.Load(filepathNoExt)
+func (d *DownloadHelper) CancelDownload(trackId string) CancelDownloadStatus {
+	entry, ok := d.downloadEntries.Load(trackId)
 	if !ok {
 		return DCancelNotFound
 	}
