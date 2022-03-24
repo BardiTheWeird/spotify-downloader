@@ -187,6 +187,8 @@ export function App() {
     })();
   }, []);
 
+  const [faqStatus, updateFAQStatus] = React.useState();
+
   function LightDark() {
     let returnVal;
     if (isDark === true) {
@@ -197,6 +199,7 @@ export function App() {
     }
     return returnVal;
   }
+
   return (
     <div className={`App ${LightDark()}`}>
     <Routes>
@@ -223,6 +226,48 @@ export function App() {
                 }
               </div>
             </div>
+            <div className='FAQ' onClick={() => updateFAQStatus(true)}>
+              <img src={"./icon.ico"} width="40px" height="40px"></img>
+            </div>
+
+            {
+              faqStatus && 
+              <div className='infoBack'>
+                <div className='infobox'>
+                  <h3>FAQ</h3>
+                  <p>
+                    <div>Dear User,</div>
+                    <div>welcome to Spotify Downloader</div>
+                  </p>                
+                  <body className='infoBody'>
+                  <div className='infotext'>Please notice: for application to work properly you need to install:</div>
+                  <div>
+                    <i className="fa-solid fa-download"></i>
+                    <> </>
+                    <a href='https://youtube-dl.org/' className='link'>youtube-dl</a>
+                  </div>
+                  <div>
+                    <i className="fa-solid fa-download"></i>
+                    <> </>
+                    <a href='https://www.ffmpeg.org/download.html' className='link'>FFMPEG</a>
+                  </div>
+                  <div className='infotext'>
+                    Prior to begin the search of a playlist, please login using a button in upper-left corner. You can log out any time you want using the dropping button under the profile name.
+                  </div>
+                  <div className='infotext'>
+                    Insert a copied link to the Spotify playlist or album into the upper submittion field and click Submit button. If link is incorrect you'll receive a message from the application.
+                  </div>
+                  <div className='infotext'>
+                    Before the download User needs to either insert a directory into the second submittion field or use the Browse button to select a desired folder.
+                  </div>
+                  <div className='infotext'>
+                    After the selection of tracks to download by the means of selector boxes, the download process will begin on click of the Download Selected button. While in process it can be cancelled by the respective button. Dwonload status will be displayed in the Status column.
+                  </div>
+                  </body>
+                  <button onClick={() => updateFAQStatus(false)} className='uselessButton'>Goi It</button>
+                </div>
+              </div>
+            }
             
             <header className="App-header">
               <IsLoggedIn/>
@@ -499,7 +544,7 @@ export function PlaylistTable({playlist, downloadPath}) {
 
     */
 
-  let playPreview = true
+  const [playPreview, updateplayPreview] = React.useState(true)
 
   return (
     <>
