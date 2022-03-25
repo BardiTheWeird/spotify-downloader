@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const {spawn} = require('child_process');
+const {spawn, spawnSync} = require('child_process');
 const path = require('path');
 const kill = require('tree-kill');
 const isDev = require('electron-is-dev');
@@ -21,6 +21,26 @@ const backendExecutablePath = isDev
   : path.join(resourcesDir, 'backend' + excutableExtension);
 
 let backendStatus;
+
+if (isDev) {
+  console.log('building backend...')
+  const buildBackend = spawnSync("go",
+    ['build', '-o', './build/backend' + excutableExtension],
+    {
+      cwd: '../backend'
+    });
+
+  if (buildBackend.error) {
+    console.log('error building backend:', buildBackend.error);
+  }
+  else {
+    if (buildBackend.status !== 0) {
+      console.log('status:', buildBackend.status);
+      console.log('output:', buildBackend.output.join('\n'));
+    }
+  }
+}
+
 const backend = spawn(backendExecutablePath);
 
 backend.on('error', err => {
