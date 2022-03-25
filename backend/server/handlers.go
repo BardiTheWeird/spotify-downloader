@@ -114,7 +114,7 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 
 		var downloadStatus downloader.DownloadStartStatus
 		for i := 0; i < 3; i++ {
-			downloadLink, exists := clihelpers.GetYoutubeDownloadLink(youtubeLink)
+			downloadLink, exists := s.GetYoutubeDownloadLink(youtubeLink)
 			if !exists {
 				requesthelpers.WriteJsonResponse(rw,
 					http.StatusNotFound,
@@ -135,8 +135,7 @@ func (s *Server) handleDownloadStart() http.HandlerFunc {
 					Artist: downloadRequest.Artist,
 					Album:  downloadRequest.Album,
 					Image:  downloadRequest.Image,
-				},
-				s.FeatureFfmpegInstalled)
+				})
 
 			if downloadStatus != downloader.DStartErrorInvalidUrl {
 				break

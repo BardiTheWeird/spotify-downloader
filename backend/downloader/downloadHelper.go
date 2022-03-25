@@ -16,6 +16,7 @@ import (
 type DownloadHelper struct {
 	// trackId -> models.DownloadEntry
 	downloadEntries downloadEntrySyncMap
+	*clihelpers.CliHelper
 }
 
 type DownloadStartStatus int
@@ -34,7 +35,7 @@ func (rf readerWithCancellationFunc) Read(p []byte) (n int, err error) {
 	return rf(p)
 }
 
-func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url string, metadata clihelpers.FfmpegMetadata, convertToMp3 bool) DownloadStartStatus {
+func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url string, metadata clihelpers.FfmpegMetadata) DownloadStartStatus {
 	ch := make(chan DownloadStartStatus)
 	filepathNoExt := filepath.Join(downloadFolder, filename)
 	filepathTmp := filepathNoExt + ".tmp"
@@ -120,11 +121,11 @@ func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url st
 			default:
 				log.Println("download at", filepathNoExt, "was finished")
 
-				if convertToMp3 {
+				if d.FeatureFfmpegInstalled {
 					entry.Status = models.DownloadConvertationInProgress
 					d.downloadEntries.Store(trackId, entry)
 
-					err := clihelpers.FfmpegConvert(filepathTmp, filepathNoExt+".mp3", metadata)
+					err := d.FfmpegConvert(filepathTmp, filepathNoExt+".mp3", metadata)
 					if err != nil {
 						entry.Status = models.DownloadErrorConverting
 					} else {

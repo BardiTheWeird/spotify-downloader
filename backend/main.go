@@ -14,10 +14,7 @@ func main() {
 
 func runServer() {
 	srv := server.Server{}
-	srv.ConfigureRoutes()
-	srv.DiscoverFeatures()
-
-	srv.SonglinkHelper.SetDefaults()
+	srv.ConfigureDefaults()
 
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
