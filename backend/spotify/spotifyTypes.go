@@ -54,6 +54,8 @@ type track struct {
 			Url string
 		}
 	}
+
+	Preview_url string
 }
 
 func toModelsPlaylist(tracksIn []track) models.Playlist {
@@ -75,6 +77,7 @@ func toModelsPlaylist(tracksIn []track) models.Playlist {
 
 			AlbumTitle: t.Album.Name,
 			AlbumImage: albumImage,
+			PreviewUrl: t.Preview_url,
 		})
 	}
 
