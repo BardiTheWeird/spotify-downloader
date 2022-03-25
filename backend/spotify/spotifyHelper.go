@@ -57,6 +57,10 @@ func (s *SpotifyHelper) GetPlaylistById(id, linkType, accessToken string) (model
 			var album albumTracks
 			json.NewDecoder(response.Body).Decode(&album)
 			modelsPlaylist = toModelsPlaylist(album.toTracks())
+		case "tracks":
+			var trackVariable track
+			json.NewDecoder(response.Body).Decode(&trackVariable)
+			modelsPlaylist = toModelsPlaylist([]track{trackVariable})
 		default:
 			return models.Playlist{}, NotFound
 		}
