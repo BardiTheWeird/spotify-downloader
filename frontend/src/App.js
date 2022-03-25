@@ -97,16 +97,18 @@ export function IsLoggedIn() {
     _updateAppUrl(await ipcRenderer.invoke('appUrl'));
   }
 
-  React.useEffect(async () => {
-    const user = await getUser();
-    updateUser(user);
-    if (!user) {
-      updateCodeChallenge();
-      updateAppUrl();
-      updateIsUserLogged(false)
-    }
-    else {updateIsUserLogged(true)}
-  },[]);
+  React.useEffect(() => {
+    (async () => {
+      const user = await getUser();
+      updateUser(user);
+      if (!user) {
+        updateCodeChallenge();
+        updateAppUrl();
+        updateIsUserLogged(false)
+      }
+      else {updateIsUserLogged(true)}
+    })()
+  }, []);
 
   function Logout() {
     localStorage.setItem('access token', '');
@@ -284,24 +286,26 @@ export function App() {
 
 export function AuthCallback() {
   const navigate = useNavigate();
-  React.useEffect(async () => {
-    const code_verifier = localStorage.getItem('code_verifier');
-    const url = new URL(document.URL)
-    const authorizationCode = url.searchParams.get('code');
-
-    const appUrl = await ipcRenderer.invoke('appUrl');
-
-    const response = await fetch(`https://accounts.spotify.com/api/token?grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${appUrl}/callback&client_id=63d55a793f9c4a9e8d5aacba30069a23&code_verifier=${code_verifier}`, {
-      method: "POST",
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    const responseBody = await response.json();
-
-    localStorage.setItem('access token', responseBody.access_token || '');
-    localStorage.setItem('refresh token', responseBody.refresh_token || '');
-
-    navigate('/');
-  }, [])
+  React.useEffect(() => {
+    (async () => {
+      const code_verifier = localStorage.getItem('code_verifier');
+      const url = new URL(document.URL)
+      const authorizationCode = url.searchParams.get('code');
+  
+      const appUrl = await ipcRenderer.invoke('appUrl');
+  
+      const response = await fetch(`https://accounts.spotify.com/api/token?grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${appUrl}/callback&client_id=63d55a793f9c4a9e8d5aacba30069a23&code_verifier=${code_verifier}`, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+      const responseBody = await response.json();
+  
+      localStorage.setItem('access token', responseBody.access_token || '');
+      localStorage.setItem('refresh token', responseBody.refresh_token || '');
+  
+      navigate('/');
+    })();
+  }, []);
 
   return <></>;
 }
@@ -340,6 +344,7 @@ export function InputBar() {
         break;
       case 429:
       case 500:
+      default:
         alert('Somethign went wrong');
     }
   }
@@ -444,7 +449,7 @@ export function PlaylistTable({playlist, downloadPath}) {
       });
       if (downloadResponse.status !== 204) {
         downloadCounter.current--;
-        if (downloadCounter.current == 0) {
+        if (downloadCounter.current === 0) {
           isDownloading.current = false;
           setForceUpdate(Date.now());
         }
@@ -522,7 +527,7 @@ export function PlaylistTable({playlist, downloadPath}) {
         await new Promise(r => setTimeout(r, 1000));
         if (downloadEntry.status >= 2) {
           downloadCounter.current--;
-          if (downloadCounter.current == 0) {
+          if (downloadCounter.current === 0) {
             isDownloading.current = false;
             setForceUpdate(Date.now());
           }
@@ -622,7 +627,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                 disabled={isDownloading.current}
                 /></td>
                 <td onMouseEnter={(e) => {e.target.style = "Preview"}} onMouseLeave={(e) => {e.target.style = "PreviewNone"}}>{
-                  playPreview == true &&
+                  playPreview === true &&
                   <i className="fa-solid fa-play Preview"></i> ||
                   <i className="fa-solid fa-pause Preview"></i>
                 }
