@@ -1,7 +1,6 @@
 package server
 
 import (
-	"log"
 	"net/http"
 	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
@@ -16,8 +15,7 @@ type Server struct {
 	SonglinkHelper songlink.SonglinkHelper
 	downloader.DownloadHelper
 
-	FeatureYoutubeDlInstalled bool
-	FeatureFfmpegInstalled    bool
+	clihelpers.CliHelper
 
 	router *chi.Mux
 }
@@ -26,19 +24,13 @@ func (s *Server) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(rw, r)
 }
 
-func (s *Server) DiscoverFeatures() {
-	_, _, err := clihelpers.RunCliCommand("youtube-dl", "--version")
-	if err == nil {
-		s.FeatureYoutubeDlInstalled = true
-		log.Println("youtube-dl detected")
-	} else {
-		log.Println("youtube-dl could not be detected. Downloads will be unavailable")
-	}
-	_, _, err = clihelpers.RunCliCommand("ffmpeg", "-version")
-	if err == nil {
-		s.FeatureFfmpegInstalled = true
-		log.Println("ffmpeg detected")
-	} else {
-		log.Println("ffmpeg could not be detected. Conversion from mp4 will not be available")
-	}
+func (s *Server) ConfigureDefaults() {
+	s.ConfigureRoutes()
+
+	s.SonglinkHelper.SetDefaults()
+
+	s.FfmpegPath = "ffmpeg"
+	s.YoutubeDlPath = "youtube-dl"
+	s.DiscoverFeatures()
+	s.DownloadHelper.CliHelper = &s.CliHelper
 }

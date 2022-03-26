@@ -104,3 +104,15 @@ Everything starts with /api/v1
 		ffmpeg: bool
 	}
 	```
+- `POST /configure/ffmpeg?path={path_to_ffmpeg_binary}`
+	- Configures path to an ffmpeg binary
+	- Status codes:
+		- 204
+		- 400 => `path` was not provided
+		- 404 => file at `path` doesn't exist or isn't a valid ffmpeg binary
+- `POST /configure/youtube-dl?path={path_to_ffmpeg_binary}`
+	- Configures path to a youtube-dl binary
+	- Status codes:
+		- 204
+		- 400 => `path` was not provided
+		- 404 => file at `path` doesn't exist or isn't a valid youtube-dl binary

@@ -7,6 +7,29 @@ import (
 	"strings"
 )
 
+type CliHelper struct {
+	FeatureYoutubeDlInstalled bool
+	FeatureFfmpegInstalled    bool
+
+	YoutubeDlPath string
+	FfmpegPath    string
+}
+
+func (c *CliHelper) DiscoverFeatures() {
+	c.FeatureYoutubeDlInstalled = c.DiscoverFeature(c.YoutubeDlPath, "--version")
+	c.FeatureFfmpegInstalled = c.DiscoverFeature(c.FfmpegPath, "-version")
+}
+
+func (c *CliHelper) DiscoverFeature(command string, params ...string) bool {
+	_, _, err := RunCliCommand(command, params...)
+	if err == nil {
+		log.Println(command, "detected")
+		return true
+	}
+	log.Println(command, "could not be detected")
+	return false
+}
+
 func RunCliCommand(name string, params ...string) (string, string, error) {
 	cmd := exec.Command(name, params...)
 	var stdout bytes.Buffer
@@ -18,12 +41,12 @@ func RunCliCommand(name string, params ...string) (string, string, error) {
 	return stdout.String(), stderr.String(), err
 }
 
-func GetYoutubeDownloadLink(youtubeLink string) (string, bool) {
+func (c *CliHelper) GetYoutubeDownloadLink(youtubeLink string) (string, bool) {
 	var link string
 	var err error
 	// retries
 	for i := 0; i < 3; i++ {
-		link, _, err = RunCliCommand("youtube-dl", "-x", "-g", youtubeLink)
+		link, _, err = RunCliCommand(c.YoutubeDlPath, "-x", "-g", youtubeLink)
 		if err == nil {
 			break
 		}
@@ -44,7 +67,7 @@ type FfmpegMetadata struct {
 	Image  string
 }
 
-func FfmpegConvert(filepathIn, filepathOut string, metadata FfmpegMetadata) error {
+func (c *CliHelper) FfmpegConvert(filepathIn, filepathOut string, metadata FfmpegMetadata) error {
 	args := make([]string, 0, 10)
 	args = append(args, "-y", "-i", filepathIn)
 
@@ -66,7 +89,7 @@ func FfmpegConvert(filepathIn, filepathOut string, metadata FfmpegMetadata) erro
 	var err error
 	// convertation retries
 	for i := 0; i < 3; i++ {
-		_, _, err = RunCliCommand("ffmpeg", args...)
+		_, _, err := RunCliCommand(c.FfmpegPath, args...)
 		if err == nil {
 			break
 		}
