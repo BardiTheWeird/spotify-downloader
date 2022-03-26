@@ -16,23 +16,18 @@ type CliHelper struct {
 }
 
 func (c *CliHelper) DiscoverFeatures() {
-	_, _, err := RunCliCommand(c.YoutubeDlPath, "--version")
+	c.FeatureYoutubeDlInstalled = c.DiscoverFeature(c.YoutubeDlPath, "--version")
+	c.FeatureFfmpegInstalled = c.DiscoverFeature(c.FfmpegPath, "-version")
+}
+
+func (c *CliHelper) DiscoverFeature(command string, params ...string) bool {
+	_, _, err := RunCliCommand(command, params...)
 	if err == nil {
-		c.FeatureYoutubeDlInstalled = true
-		log.Println("youtube-dl detected")
-	} else {
-		log.Println("youtube-dl could not be detected. Downloads will be unavailable")
+		log.Println(command, "detected")
+		return true
 	}
-	_, _, err = RunCliCommand(c.FfmpegPath, "-version")
-	if err == nil {
-		c.FeatureFfmpegInstalled = true
-		log.Println("ffmpeg detected")
-	} else {
-		for i := 0; i < 30; i++ {
-			log.Println("ffmpeg path:", c.FfmpegPath)
-			log.Println("ffmpeg could not be detected. Conversion from mp4 will not be available")
-		}
-	}
+	log.Println(command, "could not be detected")
+	return false
 }
 
 func RunCliCommand(name string, params ...string) (string, string, error) {

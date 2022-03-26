@@ -34,5 +34,9 @@ func (s *Server) apiRouter() *chi.Mux {
 		r.Post("/cancel", s.handleDownloadCancel())
 	})
 	r.Get("/features", s.handleFeatures())
+	r.Route("/configure", func(r chi.Router) {
+		r.Post("/ffmpeg", s.handleConfigureFfmpeg())
+		r.Post("/youtube-dl", s.handleConfigureYoutubeDl())
+	})
 	return r
 }

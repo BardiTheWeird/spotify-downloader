@@ -217,3 +217,39 @@ func (s *Server) handleFeatures() http.HandlerFunc {
 			features)
 	}
 }
+
+func (s *Server) handleConfigureFfmpeg() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		path, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		if !ok {
+			return
+		}
+
+		s.FfmpegPath = path
+		s.FeatureFfmpegInstalled = s.DiscoverFeature(path, "-version")
+
+		if s.FeatureFfmpegInstalled {
+			rw.WriteHeader(http.StatusNoContent)
+		} else {
+			rw.WriteHeader(http.StatusNotFound)
+		}
+	}
+}
+
+func (s *Server) handleConfigureYoutubeDl() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		path, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("path", rw, r)
+		if !ok {
+			return
+		}
+
+		s.YoutubeDlPath = path
+		s.FeatureYoutubeDlInstalled = s.DiscoverFeature(path, "-version")
+
+		if s.FeatureYoutubeDlInstalled {
+			rw.WriteHeader(http.StatusNoContent)
+		} else {
+			rw.WriteHeader(http.StatusNotFound)
+		}
+	}
+}
