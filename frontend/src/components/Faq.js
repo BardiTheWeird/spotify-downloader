@@ -11,6 +11,19 @@ export function Faq() {
     if (user) {
         userName = user.display_name;
     }
+    const system = navigator.platform;
+
+    let ffmperUrl = "";
+
+    if (system == "Win32") {
+        ffmperUrl = <a href='https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.0-latest-win64-gpl-5.0.zip' className='link'>FFMPEG</a>
+    }
+
+    else {
+        ffmperUrl = "Execute:\n"
+            + "Arch: pacman -S ffmpeg\n"
+            + "Debian: apt-get install ffmpeg";    
+    }
 
     return <>
         <div className='FAQ' onClick={() => updateFAQStatus(true)}>
@@ -33,7 +46,7 @@ export function Faq() {
                 </div>
                 <div className='infotext'>
                 <i className="fa-solid fa-download infotext"></i>
-                <a href='https://www.ffmpeg.org/download.html' className='link'>FFMPEG</a>
+                {ffmperUrl}
                 </div>
                 <div className='infotext'>
                 Before searching of a playlist, please login using a button in upper-left corner. You can log out any time you want using the dropping button under the profile name.
