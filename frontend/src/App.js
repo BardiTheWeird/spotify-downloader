@@ -6,7 +6,7 @@ import {
   Route,
 } from "react-router-dom";
 
-import { IsLoggedIn } from './components/UserBar';
+import { UserBar } from './components/UserBar';
 import { AuthCallback } from './components/AuthCallback';
 import { InputBar } from './components/InputBar';
 import { Faq } from './components/Faq';
@@ -51,7 +51,7 @@ export function App() {
             <Faq />
             
             <header className="App-header">
-              <IsLoggedIn/>
+              <UserBar/>
               <div>Enter Spotify Playlist Or Album URL:</div>
             </header>
             <InputBar />

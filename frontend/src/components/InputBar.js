@@ -6,6 +6,7 @@ import { authorizedFetch } from "../utilities";
 import { UserContext } from "../services/UserService";
 
 import { PlaylistTable } from './PlaylistTable';
+import { UserBar } from "./UserBar";
 
 const { ipcRenderer } = window.require('electron');
 
@@ -16,11 +17,13 @@ export function InputBar() {
     const [formData, updateFormData] = React.useState();
     const [playlist, updatePlaylist] = React.useState();
     const [downloadPath, updateDownloadPath] = React.useState('');
-  
+
     const submitPlaylistLink = async (e) => {
+      // window.location.href = "https://www.google.com"
       e.preventDefault();
       if (!user) {
-        alert('Log in, please');
+        // alert('Log in, please');
+        UserBar() 
         return;
       }
       let response = await authorizedFetch(`${baseUrl}/spotify/playlist?link=${formData}`);
