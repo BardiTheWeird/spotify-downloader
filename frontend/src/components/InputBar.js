@@ -7,6 +7,7 @@ import { UserContext } from "../services/UserService";
 
 import { PlaylistTable } from './PlaylistTable';
 import { UserBar } from "./UserBar";
+import { OAuthUrlContext } from "../services/OAuthUrlService";
 
 const { ipcRenderer } = window.require('electron');
 
@@ -17,12 +18,14 @@ export function InputBar() {
     const [formData, updateFormData] = React.useState();
     const [playlist, updatePlaylist] = React.useState();
     const [downloadPath, updateDownloadPath] = React.useState('');
+    const oauthUrl = React.useContext(OAuthUrlContext);
 
     const submitPlaylistLink = async (e) => {
       // window.location.href = "https://www.google.com"
       e.preventDefault();
       if (!user) {
         // alert('Log in, please');
+        window.location.href = oauthUrl;
         UserBar() 
         return;
       }
