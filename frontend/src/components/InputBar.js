@@ -1,29 +1,29 @@
 import React from "react";
 
-import { IsLoggedInContext, BaseUrlContex } from "../contexts";
+import { FaqStatusContext } from '../services/FaqService';
+import { useBaseUrl } from "../services/BaseUrlService";
 import { authorizedFetch } from "../utilities";
+import { UserContext } from "../services/UserService";
 
 import { PlaylistTable } from './PlaylistTable';
 
 const { ipcRenderer } = window.require('electron');
 
 export function InputBar() {
-    const [isUserLogged, updateIsUserLogged] = React.useContext(IsLoggedInContext);
-    const baseUrl = React.useContext(BaseUrlContex);
+    const [user, updateUser] = React.useContext(UserContext);
+    const [, updateFAQStatus] = React.useContext(FaqStatusContext);
+    const baseUrl = useBaseUrl();
     const [formData, updateFormData] = React.useState();
     const [playlist, updatePlaylist] = React.useState();
     const [downloadPath, updateDownloadPath] = React.useState('');
   
     const submitPlaylistLink = async (e) => {
       e.preventDefault();
-      if (!isUserLogged) {
+      if (!user) {
         alert('Log in, please');
         return;
       }
       let response = await authorizedFetch(`${baseUrl}/spotify/playlist?link=${formData}`);
-      if (response === null) {
-        alert("YOU STILL DON'T HANDLE UNAUTHORIZED PLAYLIST SUBMIT (or your (refresh) tokens are ded, idk)");
-      }
   
       switch (response.status) {
         case 200:

@@ -1,14 +1,13 @@
 import React from "react";
 
-import {IsLoggedInContext} from '../contexts'
+import {UserContext} from '../services/UserService'
 import {authorizedFetch} from '../utilities'
 
 const { ipcRenderer } = window.require('electron');
 
 
 export function IsLoggedIn() {
-    const [isUserLogged, updateIsUserLogged] = React.useContext(IsLoggedInContext);
-    const [user, updateUser] = React.useState();
+    const [user, updateUser] = React.useContext(UserContext);
     const [code_challenge, updateCode_challenge] = React.useState();
     const [appUrl, _updateAppUrl] = React.useState();
 
@@ -47,9 +46,7 @@ export function IsLoggedIn() {
         if (!user) {
         updateCodeChallenge();
         updateAppUrl();
-        updateIsUserLogged(false)
         }
-        else {updateIsUserLogged(true)}
     },[]);
 
     function Logout() {
@@ -58,7 +55,6 @@ export function IsLoggedIn() {
         updateUser(null);
         updateCodeChallenge();
         updateAppUrl();
-        updateIsUserLogged(false);
     }
 
     if (!user) {

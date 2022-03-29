@@ -1,6 +1,17 @@
 import React from "react";
 
-export function Faq({faqStatus, updateFAQStatus}) {
+import { FaqStatusContext } from '../services/FaqService';
+import { UserContext } from "../services/UserService";
+
+export function Faq() {
+    const [user] = React.useContext(UserContext);
+    const [faqStatus, updateFAQStatus] = React.useContext(FaqStatusContext);
+
+    let userName = "User";
+    if (user) {
+        userName = user.display_name;
+    }
+
     return <>
         <div className='FAQ' onClick={() => updateFAQStatus(true)}>
             <img src={"./icon.ico"} width="40px" height="40px"></img>
@@ -11,7 +22,7 @@ export function Faq({faqStatus, updateFAQStatus}) {
             <div className='infobox'>
                 <h3>FAQ</h3>
                 <p>
-                <div>Dear User,</div>
+                <div>Dear {userName},</div>
                 <div>welcome to Spotify Downloader</div>
                 </p>                
                 <body className='infoBody'>

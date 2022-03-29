@@ -1,11 +1,10 @@
 import React from "react";
-
-import { BaseUrlContex } from "../contexts";
+import { useBaseUrl } from "../services/BaseUrlService";
 
 const illegalFilenameChars = ['<', '>', ':', '"', '\\', '/', '|', '?', '*'];
 
 export function PlaylistTable({playlist, downloadPath}) {
-    const baseUrl = React.useContext(BaseUrlContex);
+    const baseUrl = useBaseUrl();
     // a workaround for forcing a rerender
     const [, setForceUpdate] = React.useState(Date.now());
     const isDownloading = React.useRef(false);
