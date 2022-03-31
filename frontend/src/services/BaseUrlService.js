@@ -28,6 +28,8 @@ export function BaseUrlProvider(props) {
     })();
   }, []);
 
+  console.log('backend base url:', baseUrl);
+
   return (
     <BaseUrlContex.Provider value={baseUrl}>
         {props.children}

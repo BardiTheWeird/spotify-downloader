@@ -1,9 +1,11 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const {spawn, spawnSync} = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const path = require('path');
 const kill = require('tree-kill');
 const isDev = require('electron-is-dev');
 const os = require('os');
+
+const fetch = require('make-fetch-happen');
 
 const isWin = os.platform() === 'win32';
 const excutableExtension = isWin && '.exe' || '';
@@ -21,6 +23,12 @@ const backendExecutablePath = isDev
   : path.join(resourcesDir, 'backend' + excutableExtension);
 
 let backendStatus;
+function getBaseUrl() {
+  if (backendStatus && backendStatus.running) {
+    return backendStatus.address;
+  }
+  return null;
+}
 
 if (isDev) {
   console.log('building backend...')
@@ -68,6 +76,23 @@ backend.stderr.on('data', data => {
   console.log('BACKEND:', data.toString());
 });
 
+ipcMain.handle('configureFeaturePath', async (_, featureName) => {
+  const path = dialog.showOpenDialogSync()[0];
+  console.log(`${featureName} path is:`, path);
+  
+  const response = await fetch(`${getBaseUrl()}/configure/${featureName}?path=${path}`, {
+    method: 'POST'
+  });
+
+  console.log('response:', response.status);
+
+  if (response.status == 204) {
+    return true;
+  }
+  else if (response.status == 400 || response.status == 404) {
+    return false;
+  }
+});
 ipcMain.handle('openDirectory', () => {
   const path = dialog.showOpenDialogSync({
     properties: ["openDirectory"]
