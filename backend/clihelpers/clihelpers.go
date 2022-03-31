@@ -8,26 +8,41 @@ import (
 )
 
 type CliHelper struct {
-	FeatureYoutubeDlInstalled bool
-	FeatureFfmpegInstalled    bool
-
-	YoutubeDlPath string
-	FfmpegPath    string
+	Features struct {
+		Ffmpeg    Feature
+		YoutubeDl Feature
+	}
 }
 
-func (c *CliHelper) DiscoverFeatures() {
-	c.FeatureYoutubeDlInstalled = c.DiscoverFeature(c.YoutubeDlPath, "--version")
-	c.FeatureFfmpegInstalled = c.DiscoverFeature(c.FfmpegPath, "-version")
+type Feature struct {
+	Path               string
+	Installed          bool
+	HealthCheckCommand []string
 }
 
-func (c *CliHelper) DiscoverFeature(command string, params ...string) bool {
-	_, _, err := RunCliCommand(command, params...)
+func (f *Feature) CheckHealth() bool {
+	_, _, err := RunCliCommand(f.Path, f.HealthCheckCommand...)
 	if err == nil {
-		log.Println(command, "detected")
+		log.Println(f.Path, "detected")
+		f.Installed = true
 		return true
 	}
-	log.Println(command, "could not be detected")
+	log.Println(f.Path, "could not be detected", err)
+	f.Installed = false
 	return false
+}
+
+func (c *CliHelper) FeaturesSetDefaults() {
+	c.Features.Ffmpeg = Feature{
+		Path:               "ffmpeg",
+		HealthCheckCommand: []string{"-version"},
+	}
+	c.Features.Ffmpeg.CheckHealth()
+	c.Features.YoutubeDl = Feature{
+		Path:               "youtube-dl",
+		HealthCheckCommand: []string{"--version"},
+	}
+	c.Features.YoutubeDl.CheckHealth()
 }
 
 func RunCliCommand(name string, params ...string) (string, string, error) {
@@ -46,7 +61,7 @@ func (c *CliHelper) GetYoutubeDownloadLink(youtubeLink string) (string, bool) {
 	var err error
 	// retries
 	for i := 0; i < 3; i++ {
-		link, _, err = RunCliCommand(c.YoutubeDlPath, "-x", "-g", youtubeLink)
+		link, _, err = RunCliCommand(c.Features.YoutubeDl.Path, "-x", "-g", youtubeLink)
 		if err == nil {
 			break
 		}
@@ -89,7 +104,7 @@ func (c *CliHelper) FfmpegConvert(filepathIn, filepathOut string, metadata Ffmpe
 	var err error
 	// convertation retries
 	for i := 0; i < 3; i++ {
-		_, _, err := RunCliCommand(c.FfmpegPath, args...)
+		_, _, err := RunCliCommand(c.Features.Ffmpeg.Path, args...)
 		if err == nil {
 			break
 		}

@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"spotify-downloader/clihelpers"
 	"spotify-downloader/requesthelpers"
 	"time"
 )
@@ -22,10 +23,10 @@ func LogEndpoint() func(http.Handler) http.Handler {
 	}
 }
 
-func IsFeatureEnabled(feature *bool, featureName string) func(http.Handler) http.Handler {
+func IsFeatureEnabled(feature *clihelpers.Feature, featureName string) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			if !*feature {
+			if !feature.Installed {
 				requesthelpers.WriteJsonResponse(rw,
 					http.StatusServiceUnavailable,
 					requesthelpers.CreateErrorPayload(

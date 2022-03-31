@@ -208,8 +208,8 @@ func (s *Server) handleFeatures() http.HandlerFunc {
 			YoutubeDl bool `json:"youtube_dl"`
 			Ffmpeg    bool `json:"ffmpeg"`
 		}{
-			YoutubeDl: s.FeatureYoutubeDlInstalled,
-			Ffmpeg:    s.FeatureFfmpegInstalled,
+			YoutubeDl: s.Features.YoutubeDl.Installed,
+			Ffmpeg:    s.Features.Ffmpeg.Installed,
 		}
 
 		requesthelpers.WriteJsonResponse(rw,
@@ -218,35 +218,17 @@ func (s *Server) handleFeatures() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleConfigureFfmpeg() http.HandlerFunc {
+func (s *Server) handleConfigureFeature(feature *clihelpers.Feature) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		path, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
 			return
 		}
 
-		s.FfmpegPath = path
-		s.FeatureFfmpegInstalled = s.DiscoverFeature(path, "-version")
+		feature.Path = path
+		feature.CheckHealth()
 
-		if s.FeatureFfmpegInstalled {
-			rw.WriteHeader(http.StatusNoContent)
-		} else {
-			rw.WriteHeader(http.StatusNotFound)
-		}
-	}
-}
-
-func (s *Server) handleConfigureYoutubeDl() http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		path, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("path", rw, r)
-		if !ok {
-			return
-		}
-
-		s.YoutubeDlPath = path
-		s.FeatureYoutubeDlInstalled = s.DiscoverFeature(path, "-version")
-
-		if s.FeatureYoutubeDlInstalled {
+		if feature.Installed {
 			rw.WriteHeader(http.StatusNoContent)
 		} else {
 			rw.WriteHeader(http.StatusNotFound)

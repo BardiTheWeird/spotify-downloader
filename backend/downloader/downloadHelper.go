@@ -121,7 +121,7 @@ func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url st
 			default:
 				log.Println("download at", filepathNoExt, "was finished")
 
-				if d.FeatureFfmpegInstalled {
+				if d.Features.Ffmpeg.Installed {
 					entry.Status = models.DownloadConvertationInProgress
 					d.downloadEntries.Store(trackId, entry)
 

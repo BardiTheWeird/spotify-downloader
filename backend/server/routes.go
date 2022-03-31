@@ -28,15 +28,15 @@ func (s *Server) apiRouter() *chi.Mux {
 			Get("/playlist", s.handlePlaylist())
 	})
 	r.Route("/download", func(r chi.Router) {
-		r.With(IsFeatureEnabled(&s.FeatureYoutubeDlInstalled, "youtube-dl")).
+		r.With(IsFeatureEnabled(&s.Features.YoutubeDl, "youtube-dl")).
 			Post("/start", s.handleDownloadStart())
 		r.Get("/status", s.handleDownloadStatus())
 		r.Post("/cancel", s.handleDownloadCancel())
 	})
 	r.Get("/features", s.handleFeatures())
 	r.Route("/configure", func(r chi.Router) {
-		r.Post("/ffmpeg", s.handleConfigureFfmpeg())
-		r.Post("/youtube-dl", s.handleConfigureYoutubeDl())
+		r.Post("/ffmpeg", s.handleConfigureFeature(&s.Features.Ffmpeg))
+		r.Post("/youtube-dl", s.handleConfigureFeature(&s.Features.YoutubeDl))
 	})
 	return r
 }

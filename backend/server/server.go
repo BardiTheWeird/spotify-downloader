@@ -28,9 +28,7 @@ func (s *Server) ConfigureDefaults() {
 	s.ConfigureRoutes()
 
 	s.SonglinkHelper.SetDefaults()
+	s.FeaturesSetDefaults()
 
-	s.FfmpegPath = "ffmpeg"
-	s.YoutubeDlPath = "youtube-dl"
-	s.DiscoverFeatures()
 	s.DownloadHelper.CliHelper = &s.CliHelper
 }

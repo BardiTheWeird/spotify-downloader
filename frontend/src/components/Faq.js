@@ -18,11 +18,11 @@ export function Faq() {
     if (system == "Win32") {
         ffmperUrl = <a href='https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.0-latest-win64-gpl-5.0.zip' className='link'>FFMPEG</a>
     }
-
     else {
-        ffmperUrl = "Execute:\n"
-            + "Arch: pacman -S ffmpeg\n"
-            + "Debian: apt-get install ffmpeg";    
+        ffmperUrl = <>
+            Arch: pacman -S ffmpeg <br/> 
+            Debian: apt-get install ffmpeg 
+            </>;
     }
 
     return <>
