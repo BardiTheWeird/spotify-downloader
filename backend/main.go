@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -14,6 +15,8 @@ func main() {
 
 func runServer() {
 	srv := server.Server{}
+	flag.StringVar(&srv.SettingsPath, "settings-path", "", "path to settings.json")
+	flag.Parse()
 	srv.ConfigureDefaults()
 
 	listener, err := net.Listen("tcp", ":0")

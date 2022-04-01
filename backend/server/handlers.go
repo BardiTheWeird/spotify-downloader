@@ -218,7 +218,7 @@ func (s *Server) handleFeatures() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleConfigureFeature(feature *clihelpers.Feature) http.HandlerFunc {
+func (s *Server) handleConfigureFeature(feature *clihelpers.Feature, settingsKey string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		path, ok := requesthelpers.GetQueryParameterOrWriteErrorResponse("path", rw, r)
 		if !ok {
@@ -233,5 +233,9 @@ func (s *Server) handleConfigureFeature(feature *clihelpers.Feature) http.Handle
 		} else {
 			rw.WriteHeader(http.StatusNotFound)
 		}
+
+		s.UpdateSettingsFile(func(settings *map[string]string) {
+			(*settings)[settingsKey] = path
+		})
 	}
 }

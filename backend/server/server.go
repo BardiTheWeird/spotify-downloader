@@ -1,7 +1,6 @@
 package server
 
 import (
-	"flag"
 	"net/http"
 	"spotify-downloader/clihelpers"
 	"spotify-downloader/downloader"
@@ -15,8 +14,9 @@ type Server struct {
 	SpotifyHelper  spotify.SpotifyHelper
 	SonglinkHelper songlink.SonglinkHelper
 	downloader.DownloadHelper
-
 	clihelpers.CliHelper
+
+	SettingsPath string
 
 	router *chi.Mux
 }
@@ -29,14 +29,8 @@ func (s *Server) ConfigureDefaults() {
 	s.ConfigureRoutes()
 
 	s.SonglinkHelper.SetDefaults()
-	s.ConfigureFromCli()
+	s.ConfigureFromSettingsFile()
 	s.FeaturesSetDefaults()
 
 	s.DownloadHelper.CliHelper = &s.CliHelper
-}
-
-func (s *Server) ConfigureFromCli() {
-	flag.StringVar(&s.Features.Ffmpeg.Path, "ffmpeg-path", "ffmpeg", "configure path to ffmpeg")
-	flag.StringVar(&s.Features.YoutubeDl.Path, "youtube-dl-path", "youtube-dl", "configure path to youtube-dl")
-	flag.Parse()
 }
