@@ -7,7 +7,7 @@ import { FaqStatusContext } from "../services/FaqService";
 const { ipcRenderer } = window.require('electron');
 
 export function FeatureConfiguration() {
-    const [faqStatus, updateFAQStatus] = React.useContext(FaqStatusContext)
+    const [faqStatus] = React.useContext(FaqStatusContext)
     const [ytdlFound, updateYtdlFound] = useYtdlFound();
     const [ffmpegFound, updateFfmpegFound] = useFfmpegFound();
     const baseUrl = useBaseUrl();

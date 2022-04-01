@@ -196,6 +196,7 @@ input::placeholder {
   background-color: #c0cfe9;
   border: solid 1px;
   color: crimson;
+  padding: 2px;
 }
 
 .CancelDownloadButton:hover {
@@ -218,6 +219,22 @@ input::placeholder {
 .Dark .CancelDownloadButton:active {
   background: #9bb3db;
   border-color: #0a29c4;
+}
+
+.Dark .DownloadButton:focus-visible {
+  box-shadow: 0 0 5px pink;
+}
+
+.Light .DownloadButton:focus-visible {
+  box-shadow: 0 0 5px rgb(138, 195, 214);
+}
+
+.Dark .CancelDownloadButton:focus-visible {
+  box-shadow: 0 0 5px pink;
+}
+
+.Light .CancelDownloadButton:focus-visible {
+  box-shadow: 0 0 5px rgb(138, 195, 214);;
 }
 
 .checkmark {
@@ -508,7 +525,6 @@ input:checked + .slider:before {
 .Light .uselessButton:active {
   border-color: rgb(129, 128, 128);
   border-width: 2px
-  /* background-color: red; */
 }
 
 .Light .logout {
