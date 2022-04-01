@@ -33,15 +33,18 @@ func (f *Feature) CheckHealth() bool {
 }
 
 func (c *CliHelper) FeaturesSetDefaults() {
-	c.Features.Ffmpeg = Feature{
-		Path:               "ffmpeg",
-		HealthCheckCommand: []string{"-version"},
+	defaultIfEmpty := func(current *string, def string) {
+		if *current == "" {
+			*current = def
+		}
 	}
+
+	c.Features.Ffmpeg.HealthCheckCommand = []string{"-version"}
+	defaultIfEmpty(&c.Features.Ffmpeg.Path, "ffmpeg")
 	c.Features.Ffmpeg.CheckHealth()
-	c.Features.YoutubeDl = Feature{
-		Path:               "youtube-dl",
-		HealthCheckCommand: []string{"--version"},
-	}
+
+	c.Features.YoutubeDl.HealthCheckCommand = []string{"--version"}
+	defaultIfEmpty(&c.Features.Ffmpeg.Path, "youtube-dl")
 	c.Features.YoutubeDl.CheckHealth()
 }
 
