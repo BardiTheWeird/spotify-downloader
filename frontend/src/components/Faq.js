@@ -2,6 +2,7 @@ import React from "react";
 import { useBaseUrl } from "../services/BaseUrlService";
 
 import { FaqStatusContext } from '../services/FaqService';
+import { useYtdlFound, useFfmpegFound } from "../services/FeaturesFoundService";
 import { UserContext } from "../services/UserService";
 
 const { ipcRenderer } = window.require('electron');
@@ -11,8 +12,8 @@ export function Faq() {
     const [faqStatus, updateFAQStatus] = React.useContext(FaqStatusContext);
     const baseUrl = useBaseUrl();
 
-    const [ytdlFound, updateYtdlFound] = React.useState();
-    const [ffmpegFound, updateFfmpegFound] = React.useState();
+    const [ytdlFound, updateYtdlFound] = useYtdlFound();
+    const [ffmpegFound, updateFfmpegFound] = useFfmpegFound();
 
     async function featuresStatus() {
         let featuresStatus = await fetch(`${baseUrl}/features`, {
@@ -64,7 +65,7 @@ export function Faq() {
                 </p>                
                 <div className='infoBody'>
                     {!(ffmpegFound && ytdlFound) && <>
-                        <div className='infotext'>Please notice: for application to work properly you need to install:</div>
+                        <div className='infotext'>Please notice: for application to work properly you need to install applications using the links below and provide the route to executables after the downloading using respective buttons:</div>
                         <div className='infotext'>
                         <i className="fa-solid fa-download infotext"></i>
                         <a href='https://youtube-dl.org/' className='link'>youtube-dl</a>
