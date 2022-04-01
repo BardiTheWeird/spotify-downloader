@@ -13,11 +13,16 @@ import { Faq } from './components/Faq';
 import { LightDarkToggle } from './components/LightDarkToggle';
 import { useBaseUrl } from './services/BaseUrlService';
 import { FaqStatusContext } from './services/FaqService';
+import { useFfmpegFound, useYtdlFound } from './services/FeaturesFoundService';
+import { FeatureConfiguration } from './components/FeaturesConfiguration';
 
 export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 
 export function App() {
   const baseUrl = useBaseUrl();
+
+  const [ytdlFound] = useYtdlFound();
+  const [ffmpegFound] = useFfmpegFound();
 
   const [isDark, updateisDark] = React.useState(isDarkInitialValue);
   React.useEffect(() => {
@@ -49,12 +54,18 @@ export function App() {
             
             <LightDarkToggle isDark={isDark} updateisDark={updateisDark} LightDark={LightDark}/>
             <Faq />
+            <UserBar/>
+            {!(ffmpegFound && ytdlFound) &&
+                <FeatureConfiguration />
+              || <>
+                <header className="App-header">
+                  <div>Enter Spotify Playlist Or Album URL:</div>
+                </header>
+                <InputBar />
+            </>
+            }
             
-            <header className="App-header">
-              <UserBar/>
-              <div>Enter Spotify Playlist Or Album URL:</div>
-            </header>
-            <InputBar />
+            
             </>
         }/>
     </Routes>
