@@ -196,7 +196,6 @@ input::placeholder {
   background-color: #c0cfe9;
   border: solid 1px;
   color: crimson;
-  padding: 2px;
 }
 
 .CancelDownloadButton:hover {
@@ -223,6 +222,27 @@ input::placeholder {
 
 .Dark .DownloadButton:focus-visible {
   box-shadow: 0 0 5px pink;
+}
+
+.Light .DownloadButton:focus-visible {
+  box-shadow: 0 0 5px rgb(138, 195, 214);
+}
+
+.Dark .DownloadButton:disabled {
+  background: #bdbdbd;
+}
+
+.Dark .CancelDownloadButton:disabled {
+  background: #bdbdbd;
+}
+
+.Light .DownloadButton:disabled {
+  background: #8bbcdf;
+}
+
+.Light .CancelDownloadButton:disabled {
+  background: #9bb1c1;
+  color: darkslateblue;
 }
 
 .Light .DownloadButton:focus-visible {
