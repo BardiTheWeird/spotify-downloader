@@ -37,9 +37,8 @@ func (s *Server) handlePlaylist() http.HandlerFunc {
 					requesthelpers.CreateErrorPayload("Invalid Spotify link"))
 				return
 			}
-			// the path is supposed to be /{playlist/album}/{id}
+			// the path is supposed to be /{playlist/album/track}/{id}
 			linkType = splitPath[1]
-			fmt.Println("link type:", linkType)
 			id = path.Base(spotifyUrl.Path)
 		}
 

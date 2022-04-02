@@ -16,6 +16,9 @@ func main() {
 func runServer() {
 	srv := server.Server{}
 	flag.StringVar(&srv.SettingsPath, "settings-path", "", "path to settings.json")
+	flag.StringVar(&srv.SpotifyHelper.PublicAuthorizationEndpoint,
+		"authorization-endpoint", "",
+		"url to send a GET request to if client does not provide OAuth credentials")
 	flag.Parse()
 	srv.ConfigureDefaults()
 

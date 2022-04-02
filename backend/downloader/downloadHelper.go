@@ -82,11 +82,7 @@ func (d *DownloadHelper) StartDownload(trackId, downloadFolder, filename, url st
 			}
 		})
 
-		bytesWritten, err := io.Copy(out, readerWithCancellation)
-
-		fmt.Println("download at", filepathNoExt, "was finished:\n",
-			"\tbytesWritten:", bytesWritten,
-			"\n\terr:", err)
+		_, err = io.Copy(out, readerWithCancellation)
 
 		return cancelled, err
 	}
