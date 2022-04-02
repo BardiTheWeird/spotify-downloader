@@ -27,9 +27,12 @@ export function PlayerProvider({children}) {
         )
     }
 
+    // returns pausedTrackIndex: number | null
     function playPause(index) {
+        let pausedTrackIndex = null;
         if (curPlayingIndex !== null) {
             loadedTracks[curPlayingIndex].pause();
+            pausedTrackIndex = curPlayingIndex;
         }
     
         if (curPlayingIndex !== index) {
@@ -39,6 +42,8 @@ export function PlayerProvider({children}) {
         else {
             updateCurPlayingIndex(null);
         }
+
+        return pausedTrackIndex;
     }
 
     return <PlayerContext.Provider value={[playPause, loadTracks]}>

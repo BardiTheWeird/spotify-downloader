@@ -241,8 +241,11 @@ export function PlaylistTable({playlist, downloadPath}) {
                   /></td>
                   <td onMouseEnter={(e) => {e.target.style = "Preview"}} onMouseLeave={(e) => {e.target.style = "PreviewNone"}}
                   onClick={() => {
-                    playPause(index);
+                    const pausedTrackIndex = playPause(index);
                     tracks[index].isPlaying = !tracks[index].isPlaying;
+                    if (pausedTrackIndex !== index) {
+                      tracks[pausedTrackIndex].isPlaying = !tracks[pausedTrackIndex].isPlaying;
+                    }
                     updateTracks(tracks);
                   }}>{
                     tracks[index].isPlaying == false &&
