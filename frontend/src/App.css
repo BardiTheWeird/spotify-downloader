@@ -798,3 +798,8 @@ input:checked + .slider:before {
 .Light input[type="text"]:focus-visible {
   box-shadow: 0 0 5px rgb(138, 195, 214);
 }
+
+.album_image {
+  height: 30px;
+  border-radius: 10%;
+}

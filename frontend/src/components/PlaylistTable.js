@@ -250,7 +250,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                     <i className="fa-solid fa-pause PreviewPause"></i>
                   }
                   <img src={track.album_image}
-                  height="30px"/>
+                  className="album_image"/>
                   </td>
                   <td>{track.artists.join(', ')}</td>
                   <td>{track.title}</td>
