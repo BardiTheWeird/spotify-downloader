@@ -54,7 +54,8 @@ if (isDev) {
 }
 
 const backend = spawn(backendExecutablePath, [
-  "--settings-path", userSettingsPath
+  "--settings-path", userSettingsPath,
+  "--authorization-endpoint", "https://us-central1-spodow.cloudfunctions.net/SpotifyClientAuth"
 ]);
 
 backend.on('error', err => {

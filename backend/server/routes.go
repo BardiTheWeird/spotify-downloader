@@ -7,7 +7,7 @@ import (
 
 func (s *Server) ConfigureRoutes() {
 	r := chi.NewRouter()
-	r.Use(LogEndpoint())
+	r.Use(s.LogEndpoint())
 	r.Mount("/api/v1", s.apiRouter())
 	s.router = r
 }
@@ -24,11 +24,10 @@ func (s *Server) apiRouter() *chi.Mux {
 	}))
 
 	r.Route("/spotify", func(r chi.Router) {
-		r.With(IsHeaderPresent("Authorization")).
-			Get("/playlist", s.handlePlaylist())
+		r.Get("/playlist", s.handlePlaylist())
 	})
 	r.Route("/download", func(r chi.Router) {
-		r.With(IsFeatureEnabled(&s.Features.YoutubeDl, "youtube-dl")).
+		r.With(s.IsFeatureEnabled(&s.Features.YoutubeDl, "youtube-dl")).
 			Post("/start", s.handleDownloadStart())
 		r.Get("/status", s.handleDownloadStatus())
 		r.Post("/cancel", s.handleDownloadCancel())

@@ -28,12 +28,13 @@ type Track = {
 Everything starts with /api/v1
 - `GET /spotify/playlist?id={spotify_playlist_id}`
 	- `GET /spotify/playlist?link={spotify_playlist_link}`
-	- Requires an `Authorization` header with a Spotify access token.
+	- If `Authorization` header is present, the backend will use its value to authenticate with Spotify. 
+		- Otherwise it will try to use an access token it received from an external provider. With this token the backend can only access publicly available information.
 	- Returns a Playlist entity for a specified Spotify Playlist Id or Spotify Playlist Link. When both `id` and `link` are provided, `id` takes precedence.
 	- Status codes:
 		- 200 + playlist payload
 		- 400 + error payload => invalid link or "id" is empty
-		- 401 => not authorized (maybe?)
+		- 401 => not authorized
 		- 404 => no playlist with such id
 		- 429 => too many requests
 		- 500
