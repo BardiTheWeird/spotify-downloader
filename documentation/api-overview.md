@@ -21,6 +21,7 @@ type Track = {
 	artists: string[],
 	album_title: string,
 	album_image: string,
+	preview_url: string,
 }
 ```
 # Endpoints

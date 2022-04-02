@@ -598,6 +598,24 @@ input:checked + .slider:before {
   opacity: 1;
 }
 
+.PreviewPause {
+  /* visibility: hidden; */
+  opacity: 0.7;
+  font-size: 20px;
+  color: gainsboro;
+  display: block;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  transform: translate(3px, 4px);
+}
+
+.PreviewPause:hover {
+  /* visibility: visible; */
+  /* display: flex; */
+  opacity: 1;
+}
+
 .PreviewNone {
   visibility: hidden;
 }

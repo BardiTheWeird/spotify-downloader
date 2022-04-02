@@ -1,5 +1,6 @@
 import React from "react";
 import { useBaseUrl } from "../services/BaseUrlService";
+import { usePlayerLoadTracks, usePlayPause } from "../services/PlayerService";
 
 const illegalFilenameChars = ['<', '>', ':', '"', '\\', '/', '|', '?', '*'];
 
@@ -9,15 +10,11 @@ export function PlaylistTable({playlist, downloadPath}) {
     const [, setForceUpdate] = React.useState(Date.now());
     const isDownloading = React.useRef(false);
     const downloadCounter = React.useRef(0);
-    const [tracks, updateTracks] = React.useState(playlist.tracks.map(track => {
-      return {...track,
-        checked: true,
-        status: "NA"
-      };
-    }));
+    const [tracks, updateTracks] = React.useState([]);
   
     React.useEffect(() => {updateTracks(playlist.tracks.map(track => {
       return {...track,
+        isPlaying: false,
         checked: true,
         status: "NA"
       };
@@ -170,9 +167,15 @@ export function PlaylistTable({playlist, downloadPath}) {
         method: 'POST',
       });
     }
-  
-    const [playPreview, updateplayPreview] = React.useState(true)
-  
+    
+    const [previewPlaylist, updatePreviewPlaylist] = React.useState(playlist.tracks);
+    const loadTracks = usePlayerLoadTracks();
+    const playPause = usePlayPause();
+    
+    React.useEffect(() => {
+      loadTracks(previewPlaylist);
+    }, [previewPlaylist])
+
     return (
       <>
         <div className='inline-buttons'>
@@ -236,10 +239,15 @@ export function PlaylistTable({playlist, downloadPath}) {
                   }
                   disabled={isDownloading.current}
                   /></td>
-                  <td onMouseEnter={(e) => {e.target.style = "Preview"}} onMouseLeave={(e) => {e.target.style = "PreviewNone"}}>{
-                    playPreview == true &&
+                  <td onMouseEnter={(e) => {e.target.style = "Preview"}} onMouseLeave={(e) => {e.target.style = "PreviewNone"}}
+                  onClick={() => {
+                    playPause(index);
+                    tracks[index].isPlaying = !tracks[index].isPlaying;
+                    updateTracks(tracks);
+                  }}>{
+                    tracks[index].isPlaying == false &&
                     <i className="fa-solid fa-play Preview"></i> ||
-                    <i className="fa-solid fa-pause Preview"></i>
+                    <i className="fa-solid fa-pause PreviewPause"></i>
                   }
                   <img src={track.album_image}
                   height="30px"/>

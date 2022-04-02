@@ -9,6 +9,7 @@ import { UserProvider } from './services/UserService';
 import { FaqStatusProvider } from './services/FaqService';
 import { OAuthUrlProvider } from './services/OAuthUrlService';
 import { FeatureFoundProvider } from './services/FeaturesFoundService';
+import { PlayerProvider } from './services/PlayerService'
 
 ReactDOM.render(
   <React.StrictMode>
@@ -19,9 +20,11 @@ ReactDOM.render(
       <FaqStatusProvider>
       <OAuthUrlProvider>
       <FeatureFoundProvider>
+      <PlayerProvider>
 
         <App />
 
+      </PlayerProvider>
       </FeatureFoundProvider>
       </OAuthUrlProvider>
       </FaqStatusProvider>

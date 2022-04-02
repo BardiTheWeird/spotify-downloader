@@ -40,6 +40,11 @@ export function UserBar() {
         updateUser(null);
     }
 
+    let userImage = "./icon.ico";
+    if (user && user.image) {
+        userImage = user.image;
+    }
+
     if (!user) {
         return <>{
             oauthUrl && <a href={oauthUrl} className="Login">Log In</a>
@@ -48,7 +53,7 @@ export function UserBar() {
     else {
         return <>
         <button className="userleft">
-            <img src={user.image} className='userImage'/>
+            <img src={userImage} className='userImage'/>
             <span>{user.display_name}</span><i className="fa-solid fa-caret-down arrowdown"></i>
             <button className="logout" onClick={Logout}>
             Log Out
