@@ -101,8 +101,6 @@ input::placeholder {
   width: 740px;
   margin-left: auto;
   margin-right: auto;
-  /* padding-left: 40px; */
-  /* padding-right: 20px; */
 }
 
 .inputForm {
@@ -122,20 +120,12 @@ input::placeholder {
   border-color: #535458;
 }
 
-/* .Dark .inputformline:active {
-  border-color: #7b7c81;
-  border-width: 2px;
-} */
 
 .Light .inputformline {
   border-color: #c2c3c7;
   border-width: 1px;
 }
 
-/* .Light .inputformline:active {
-  border-color: #d7d8df;
-  border-width: 2px;
-} */
 
 :focus-visible {
   border-width: 2px;
@@ -380,6 +370,15 @@ input:checked + .slider:before {
   visibility: hidden;
   position: absolute;
   border: solid 1px;
+  text-decoration: none;
+}
+
+.privatePlaylist {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  border: solid 1px;
+  text-decoration: none;
 }
 
 .userleft:hover .logout {
@@ -390,6 +389,24 @@ input:checked + .slider:before {
   justify-content: center;
   padding: 5px;
   transform: translate(5px, 25px);
+  width: fit-content;
+  padding-left: 10px;
+  padding-right: 10px;
+  height: 30px;
+  opacity: 1;
+  visibility: visible;
+  transition: 200ms;
+  border-radius: 15px;
+}
+
+.userleft:hover .privatePlaylist {
+  display: block;
+  position: absolute;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transform: translate(5px, 35px);
   width: fit-content;
   padding-left: 10px;
   padding-right: 10px;
@@ -578,6 +595,11 @@ input:checked + .slider:before {
 
 .arrowdown {
   margin-left: 2px;
+}
+
+.PublicDataArrow {
+  margin-left: 3px;
+  transform: translate(0px, 5px);
 }
 
 .Preview {
@@ -802,4 +824,28 @@ input:checked + .slider:before {
 .album_image {
   height: 30px;
   border-radius: 10%;
+}
+
+.ClientIDField {
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+  border: solid 1px;
+}
+
+.Dark .ClientIDField {
+  border-color: #535458;
+}
+
+
+.Light .ClientIDField {
+  border-color: #c2c3c7;
+  border-width: 1px;
+}
+
+.loginButton {
+  border: solid 1px;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 0px 20px 4px 20px;
 }

@@ -10,6 +10,7 @@ const { ipcRenderer } = window.require('electron');
 export function UserBar() {
     const [user, updateUser] = React.useContext(UserContext);
     const oauthUrl = React.useContext(OAuthUrlContext);
+    const [loginStatus, updateLoginStatus] = React.useState();
 
     // returns userObj or null if not logged in
     async function getUser() {
@@ -46,15 +47,58 @@ export function UserBar() {
     }
 
     if (!user) {
-        return <>{
-            oauthUrl && <a href={oauthUrl} className="Login">Log In</a>
-        }</>
+        return <>
+            <div className="userleft">
+                <span className="login">Logged Out</span>
+                <i className="fa-solid fa-caret-down PublicDataArrow"></i>            
+            {
+                oauthUrl && <span className="logout privatePlaylist" onClick={() => {
+                    updateLoginStatus(true);
+                }}>Log In</span>
+            }
+            </div>
+            
+
+{ loginStatus && 
+    <div className='infoBack'>
+        <div className='infobox'>
+            <h3>FAQ</h3>
+            <p>
+                <span>Dear User,</span><br/>
+                <span>welcome to Spotify Downloader</span>
+            </p>                
+            
+            <div className='infotext'>
+                To login properly please login as a developer using a </div>
+            <a href="https://developer.spotify.com" className='link infotext'>
+                Developer website 
+            </a>           
+            <div className='infotext'>
+                Click "Create New App" and give it any name you see fit. </div>
+            <div className='infotext'>
+                Then click "Edit settings" in the top right corner.
+            </div>
+            <div className='infotext'>
+                Into the "Redirect URIs" field insert " app://-/callback " and click add, then "Save".
+            </div>
+            <div className='infotext'>
+                Then in the top left corner copy Client ID and insert into a field below. Then click "Log In" button and login into the Spotify using it's interface.
+            </div>
+            <input type="text" className='ClientIDField inputForm'></input>
+            <a href={oauthUrl} className='loginButton uselessButton' >Log In</a>
+            <br></br>
+            <br></br>
+            <button onClick={() => updateLoginStatus(false)} className='uselessButton'>Got It</button>
+        </div>
+    </div>
+    }
+    </>      
     }
     else {
         return <>
         <button className="userleft">
             <img src={userImage} className='userImage'/>
-            <span>{user.display_name}</span><i className="fa-solid fa-caret-down arrowdown"></i>
+            <span>{user.display_name}</span><i className="fa-solid fa-caret-down"></i>
             <button className="logout" onClick={Logout}>
             Log Out
             </button>

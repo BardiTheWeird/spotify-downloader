@@ -39,7 +39,7 @@ export function Faq() {
                 </p>                
                 
                     <div className='infotext'>
-                        Before searching of a playlist, please login using a button in upper-left corner. You can log out any time you want using the dropping button under the profile name.
+                        Please notice: for a search of a private playlist e.g. Liked Tracks, please login using a dropping button in upper-left corner. You can log out any time you want using the dropping button under the profile name.
                     </div>
                     <div className='infotext'>
                         Insert a copied link to the Spotify playlist or album into the upper submission field and click Submit button. If the link is incorrect you'll receive a message from the application.
