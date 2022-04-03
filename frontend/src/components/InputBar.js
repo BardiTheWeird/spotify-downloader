@@ -1,34 +1,19 @@
 import React from "react";
 
-import { FaqStatusContext } from '../services/FaqService';
 import { useBaseUrl } from "../services/BaseUrlService";
 import { authorizedFetch } from "../utilities";
-import { UserContext } from "../services/UserService";
-
 import { PlaylistTable } from './PlaylistTable';
-import { UserBar } from "./UserBar";
-import { OAuthUrlContext } from "../services/OAuthUrlService";
 
 const { ipcRenderer } = window.require('electron');
 
 export function InputBar() {
-    const [user, updateUser] = React.useContext(UserContext);
-    const [, updateFAQStatus] = React.useContext(FaqStatusContext);
     const baseUrl = useBaseUrl();
     const [formData, updateFormData] = React.useState();
     const [playlist, updatePlaylist] = React.useState();
     const [downloadPath, updateDownloadPath] = React.useState('');
-    const oauthUrl = React.useContext(OAuthUrlContext);
 
     const submitPlaylistLink = async (e) => {
-      // window.location.href = "https://www.google.com"
       e.preventDefault();
-      if (!user) {
-        // alert('Log in, please');
-        window.location.href = oauthUrl;
-        UserBar() 
-        return;
-      }
       let response = await authorizedFetch(`${baseUrl}/spotify/playlist?link=${formData}`);
   
       switch (response.status) {

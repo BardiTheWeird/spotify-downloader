@@ -1,15 +1,16 @@
 import React from "react";
-import { OAuthUrlContext } from "../services/OAuthUrlService";
+import { useClientId, useOAuthUrl } from "../services/OAuthUrlService";
 
-import {UserContext} from '../services/UserService'
-import {authorizedFetch} from '../utilities'
+import { UserContext } from '../services/UserService'
+import { authorizedFetch } from '../utilities'
 
 const { ipcRenderer } = window.require('electron');
 
 
 export function UserBar() {
+    const oauthUrl = useOAuthUrl();
+    const [clientId, updateClientId] = useClientId();
     const [user, updateUser] = React.useContext(UserContext);
-    const oauthUrl = React.useContext(OAuthUrlContext);
     const [loginStatus, updateLoginStatus] = React.useState();
 
     // returns userObj or null if not logged in
@@ -37,7 +38,6 @@ export function UserBar() {
 
     function Logout() {
         localStorage.setItem('access token', '');
-        localStorage.setItem('refresh token', '');
         updateUser(null);
     }
 
@@ -71,7 +71,7 @@ export function UserBar() {
                 To login properly please login as a developer using a</div>
             <div className='infotext'>
             <i className="fa-solid fa-sign-in-alt signInArrow"></i>
-            <a href="https://developer.spotify.com" className='link infotext'>
+            <a href="https://developer.spotify.com/dashboard/" className='link infotext'>
                 Developer website 
             </a>
             </div>
@@ -87,8 +87,20 @@ export function UserBar() {
             <div className='infotext'>
                 Then in the top left corner copy Client ID and insert into a field below. Then click "Log In" button and login into the Spotify using it's interface.
             </div>
-            <input type="text" className='ClientIDField inputForm'></input>
-            <a href={oauthUrl} className='loginButton uselessButton' >Log In</a>
+            <input type="text" className='ClientIDField inputForm' value={clientId} onChange=
+            {
+                e => updateClientId(e.target.value.trim())
+            }
+            placeholder='Client ID'></input>
+            <button className='uselessButton' onClick={
+                () => {
+                    if (clientId.length !== 32) {
+                        alert('ClientID is not 32 characters');
+                        return;
+                    }
+                    window.location.href = oauthUrl;
+                }
+            }>Log In</button>
             <button onClick={() => updateLoginStatus(false)} className='uselessButton'>Nah...</button>
         </div>
     </div>
@@ -99,7 +111,7 @@ export function UserBar() {
         return <>
         <button className="userleft">
             <img src={userImage} className='userImage'/>
-            <span>{user.display_name}</span><i className="fa-solid fa-caret-down"></i>
+            <span>{user.display_name}</span><i className="fa-solid fa-caret-down arrowdown"></i>
             <button className="logout" onClick={Logout}>
             Log Out
             </button>

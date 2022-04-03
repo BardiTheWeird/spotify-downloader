@@ -2,22 +2,40 @@ import React from "react";
 
 const { ipcRenderer } = window.require('electron');
 
-export const OAuthUrlContext = React.createContext();
+const OAuthUrlContext = React.createContext();
+
+export function useOAuthUrl() {
+  return React.useContext(OAuthUrlContext)[0];
+}
+
+export function useClientId() {
+  return React.useContext(OAuthUrlContext)[1];
+}
 
 export function OAuthUrlProvider(props) {
     const [appUrl, updateAppUrl] = React.useState();
     const [codeChallenge, updateCodeChallenge] = React.useState();
+    const [clientId, updateClientId] = React.useState("");
 
     React.useEffect(async () => {
-        // update code challenge
-        const codeVerifier = generateRandomString(64);
-        updateCodeChallenge(await generateCodeChallenge(codeVerifier));
-        localStorage.setItem('code_verifier', codeVerifier);
+      // read clientId from localStorage
+      updateClientId(localStorage.getItem('clientId'));
 
-        updateAppUrl(await ipcRenderer.invoke('appUrl'));
+      // update code challenge
+      const codeVerifier = generateRandomString(64);
+      updateCodeChallenge(await generateCodeChallenge(codeVerifier));
+      localStorage.setItem('code_verifier', codeVerifier);
+
+      updateAppUrl(await ipcRenderer.invoke('appUrl'));
     },[]);
 
-    return <OAuthUrlContext.Provider value={`https://accounts.spotify.com/authorize?response_type=code&client_id=63d55a793f9c4a9e8d5aacba30069a23&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${codeChallenge}`}>
+    React.useEffect(() => {
+      localStorage.setItem('clientId', clientId);
+    }, [clientId]);
+
+    return <OAuthUrlContext.Provider value={[
+      `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${codeChallenge}`, 
+      [clientId, updateClientId]]}>
         {props.children}
     </OAuthUrlContext.Provider>
 }
