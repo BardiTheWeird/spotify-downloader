@@ -48,13 +48,13 @@ export function UserBar() {
 
     if (!user) {
         return <>
-            <div className="userleft">
-                <span className="login">Logged Out</span>
+            <div className="userleft Login">
+                <div>Logged Out</div>
                 <i className="fa-solid fa-caret-down PublicDataArrow"></i>            
             {
-                oauthUrl && <span className="logout privatePlaylist" onClick={() => {
+                oauthUrl && <div className="logout privatePlaylist" onClick={() => {
                     updateLoginStatus(true);
-                }}>Log In</span>
+                }}>Log In</div>
             }
             </div>
             
