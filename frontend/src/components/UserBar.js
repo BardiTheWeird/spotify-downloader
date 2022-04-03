@@ -62,17 +62,20 @@ export function UserBar() {
 { loginStatus && 
     <div className='infoBack'>
         <div className='infobox'>
-            <h3>FAQ</h3>
+            <h3>Log In FAQ</h3>
             <p>
                 <span>Dear User,</span><br/>
                 <span>welcome to Spotify Downloader</span>
             </p>                
-            
             <div className='infotext'>
-                To login properly please login as a developer using a </div>
+                To login properly please login as a developer using a</div>
+            <div className='infotext'>
+            <i className="fa-solid fa-sign-in-alt signInArrow"></i>
             <a href="https://developer.spotify.com" className='link infotext'>
                 Developer website 
-            </a>           
+            </a>
+            </div>
+                       
             <div className='infotext'>
                 Click "Create New App" and give it any name you see fit. </div>
             <div className='infotext'>
@@ -86,9 +89,7 @@ export function UserBar() {
             </div>
             <input type="text" className='ClientIDField inputForm'></input>
             <a href={oauthUrl} className='loginButton uselessButton' >Log In</a>
-            <br></br>
-            <br></br>
-            <button onClick={() => updateLoginStatus(false)} className='uselessButton'>Got It</button>
+            <button onClick={() => updateLoginStatus(false)} className='uselessButton'>Nah...</button>
         </div>
     </div>
     }

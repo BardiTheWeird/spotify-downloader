@@ -602,6 +602,11 @@ input:checked + .slider:before {
   transform: translate(0px, 5px);
 }
 
+.signInArrow {
+  margin-left: 3px;
+  transform: translate(0px, 4px);
+}
+
 .Preview {
   /* visibility: hidden; */
   opacity: 0.7;
