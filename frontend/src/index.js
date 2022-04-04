@@ -10,6 +10,7 @@ import { FaqStatusProvider } from './services/FaqService';
 import { OAuthUrlProvider } from './services/OAuthUrlService';
 import { FeatureFoundProvider } from './services/FeaturesFoundService';
 import { PlayerProvider } from './services/PlayerService'
+import { PlaylistProvider } from './services/PlaylistService';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -20,11 +21,13 @@ ReactDOM.render(
       <FaqStatusProvider>
       <OAuthUrlProvider>
       <FeatureFoundProvider>
+      <PlaylistProvider>
       <PlayerProvider>
 
         <App />
 
       </PlayerProvider>
+      </PlaylistProvider>
       </FeatureFoundProvider>
       </OAuthUrlProvider>
       </FaqStatusProvider>

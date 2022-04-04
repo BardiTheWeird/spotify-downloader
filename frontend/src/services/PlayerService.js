@@ -1,23 +1,19 @@
 import React from "react";
 import { Howl } from "howler";
+import { usePlaylist } from "./PlaylistService";
 
 const PlayerContext = React.createContext();
 
 export function usePlayPause() {
-    const [playPause] = React.useContext(PlayerContext);
-    return playPause;
-}
-
-export function usePlayerLoadTracks() {
-    const [, loadTracks] = React.useContext(PlayerContext);
-    return loadTracks;
+    return React.useContext(PlayerContext)[0];
 }
 
 export function PlayerProvider({children}) {
     const [loadedTracks, updateLoadedTracks] = React.useState();
     const [curPlayingIndex, updateCurPlayingIndex] = React.useState(null);
+    const spotifyPlaylist = usePlaylist();
 
-    function loadTracks(spotifyPlaylist) {
+    React.useEffect(() => {
         updateLoadedTracks(
             spotifyPlaylist.map(x => {
                 return new Howl({
@@ -25,7 +21,7 @@ export function PlayerProvider({children}) {
                   html5: true
               })})
         )
-    }
+    }, [spotifyPlaylist])
 
     // returns pausedTrackIndex: number | null
     function playPause(index) {
@@ -46,7 +42,7 @@ export function PlayerProvider({children}) {
         return pausedTrackIndex;
     }
 
-    return <PlayerContext.Provider value={[playPause, loadTracks]}>
+    return <PlayerContext.Provider value={[playPause]}>
         {children}
     </PlayerContext.Provider>
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { useBaseUrl } from "../services/BaseUrlService";
-import { usePlayerLoadTracks, usePlayPause } from "../services/PlayerService";
+import { usePlayPause } from "../services/PlayerService";
 
 const illegalFilenameChars = ['<', '>', ':', '"', '\\', '/', '|', '?', '*'];
 
@@ -12,13 +12,17 @@ export function PlaylistTable({playlist, downloadPath}) {
     const downloadCounter = React.useRef(0);
     const [tracks, updateTracks] = React.useState([]);
   
-    React.useEffect(() => {updateTracks(playlist.tracks.map(track => {
-      return {...track,
-        isPlaying: false,
-        checked: true,
-        status: "NA"
-      };
-    }))}, [playlist]);
+    React.useEffect(() => {
+      updateTracks(playlist.map(track => {
+        return {...track,
+          isPlaying: false,
+          checked: true,
+          status: "NA"
+        };
+      }));
+    }, [playlist]);
+
+    const playPause = usePlayPause();
   
     function DownloadSelected() {
       // set pending status
@@ -168,14 +172,6 @@ export function PlaylistTable({playlist, downloadPath}) {
       });
     }
     
-    const [previewPlaylist, updatePreviewPlaylist] = React.useState(playlist.tracks);
-    const loadTracks = usePlayerLoadTracks();
-    const playPause = usePlayPause();
-    
-    React.useEffect(() => {
-      loadTracks(previewPlaylist);
-    }, [previewPlaylist])
-
     return (
       <>
         <div className='inline-buttons'>
