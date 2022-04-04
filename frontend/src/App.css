@@ -741,7 +741,7 @@ input:checked + .slider:before {
 .infobox {
   position: absolute;
   top: 11%;
-  left: 20%;
+  left: calc(50% - 460px / 2);
   width: 460px;
   height: fit-content;
   padding-bottom: 5px;
