@@ -1,5 +1,6 @@
 import React from "react";
 import { useClientId, useOAuthUrl } from "../services/OAuthUrlService";
+import { useGetFavourites } from "../services/PlaylistService";
 
 import { UserContext } from '../services/UserService'
 import { authorizedFetch } from '../utilities'
@@ -12,6 +13,7 @@ export function UserBar() {
     const [clientId, updateClientId] = useClientId();
     const [user, updateUser] = React.useContext(UserContext);
     const [loginStatus, updateLoginStatus] = React.useState();
+    const getFavourites = useGetFavourites();
 
     // returns userObj or null if not logged in
     async function getUser() {
@@ -119,7 +121,11 @@ export function UserBar() {
                 Log Out
                 </button>
             </button>
-            <button className="likedSongs" onClick={() => {alert("Not here yet...")}} onMouseEnter={() => updateHeart("solid")} onMouseLeave={() => updateHeart("regular")}>
+            <button className="likedSongs" 
+                onClick={getFavourites} 
+                onMouseEnter={() => updateHeart("solid")}
+                onMouseLeave={() => updateHeart("regular")}>
+                
                 <i className={`fa-${heart} fa-heart heartAction`}></i>
                 <span className="LikedSongsExpansion">Load All Liked</span>
             </button>

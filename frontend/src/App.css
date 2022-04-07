@@ -888,8 +888,8 @@ input:checked + .slider:before {
 
 .likedSongs:hover .LikedSongsExpansion {
   position: relative;
-  /* display: flex; */
   padding-left: 5px;
+  padding-right: 5px;
   visibility: visible;
   animation-name: SlideRight;
   animation-duration: 150ms;
