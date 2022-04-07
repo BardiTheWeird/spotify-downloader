@@ -26,6 +26,7 @@ export function PlaylistProvider({children}) {
       switch (response.status) {
         case 200:
             let playlist = await response.json();
+            console.log('response body:', playlist);
             updatePlaylist(playlist.tracks);
           break;
         case 400:
@@ -48,12 +49,9 @@ export function PlaylistProvider({children}) {
         await switchCheck(response);
     }
 
+    console.log(localStorage.getItem('access token'))
     async function getFavourites() {
-      let response = await authorizedFetch(`${baseUrl}/spotify/saved`, {
-        headers: {
-          'access_token': localStorage.getItem('access token')
-        }
-      });
+      let response = await authorizedFetch(`${baseUrl}/spotify/saved`);
       await switchCheck(response);
   }
 

@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"spotify-downloader/server"
+	"strconv"
 )
 
 func main() {
@@ -19,15 +20,19 @@ func runServer() {
 	flag.StringVar(&srv.SpotifyHelper.PublicAuthorizationEndpoint,
 		"authorization-endpoint", "",
 		"url to send a GET request to if client does not provide OAuth credentials")
+	var port string
+	flag.StringVar(&port, "port", "0", "port to listen at")
 	flag.Parse()
 	srv.ConfigureDefaults()
 
-	listener, err := net.Listen("tcp", ":0")
+	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("listening on port",
-		listener.Addr().(*net.TCPAddr).Port)
+	if port == "0" {
+		port = strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
+	}
+	fmt.Println("listening on port", port)
 
 	log.Fatal(http.Serve(listener, &srv))
 }

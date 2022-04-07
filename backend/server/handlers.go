@@ -47,22 +47,33 @@ func (s *Server) handlePlaylist() http.HandlerFunc {
 			linkType+"s",
 			r.Header.Get("Authorization"))
 
-		switch status {
-		case spotify.ErrorSendingRequest, spotify.UnexpectedResponseStatus:
-			rw.WriteHeader(http.StatusInternalServerError)
-		case spotify.BadOrExpiredToken, spotify.BadOAuth:
-			rw.WriteHeader(http.StatusUnauthorized)
-		case spotify.ExceededRateLimits:
-			rw.WriteHeader(http.StatusTooManyRequests)
-		case spotify.NotFound:
-			rw.WriteHeader(http.StatusNotFound)
-		case spotify.BadClientCredentials:
-			requesthelpers.WriteJsonResponse(rw,
-				http.StatusHTTPVersionNotSupported,
-				requesthelpers.CreateErrorPayload("bad spotify client id or key"))
-		case spotify.Ok:
-			requesthelpers.WriteJsonResponse(rw, http.StatusOK, playlist)
-		}
+		responseFromSpotifyPlaylistStatus(rw, playlist, status)
+	}
+}
+
+func (s *Server) handleSaved() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		playlist, status := s.SpotifyHelper.GetSavedTracks(r.Header.Get("Authorization"))
+		responseFromSpotifyPlaylistStatus(rw, playlist, status)
+	}
+}
+
+func responseFromSpotifyPlaylistStatus(rw http.ResponseWriter, playlist models.Playlist, status spotify.GetPlaylistResponseStatus) {
+	switch status {
+	case spotify.ErrorSendingRequest, spotify.UnexpectedResponseStatus:
+		rw.WriteHeader(http.StatusInternalServerError)
+	case spotify.BadOrExpiredToken, spotify.BadOAuth:
+		rw.WriteHeader(http.StatusUnauthorized)
+	case spotify.ExceededRateLimits:
+		rw.WriteHeader(http.StatusTooManyRequests)
+	case spotify.NotFound:
+		rw.WriteHeader(http.StatusNotFound)
+	case spotify.BadClientCredentials:
+		requesthelpers.WriteJsonResponse(rw,
+			http.StatusHTTPVersionNotSupported,
+			requesthelpers.CreateErrorPayload("bad spotify client id or key"))
+	case spotify.Ok:
+		requesthelpers.WriteJsonResponse(rw, http.StatusOK, playlist)
 	}
 }
 
