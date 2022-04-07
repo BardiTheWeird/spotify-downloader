@@ -46,6 +46,8 @@ export function UserBar() {
         userImage = user.image;
     }
 
+    const [heart, updateHeart] = React.useState("regular");
+
     if (!user) {
         return <>
             <div className="userleft Login">
@@ -109,13 +111,19 @@ export function UserBar() {
     }
     else {
         return <>
-        <button className="userleft">
-            <img src={userImage} className='userImage'/>
-            <span>{user.display_name}</span><i className="fa-solid fa-caret-down arrowdown"></i>
-            <button className="logout" onClick={Logout}>
-            Log Out
+        <div className="userContainer">
+            <button className="userleft">
+                <img src={userImage} className='userImage'/>
+                <span>{user.display_name}</span><i className="fa-solid fa-caret-down arrowdown"></i>
+                <button className="logout" onClick={Logout}>
+                Log Out
+                </button>
             </button>
-        </button>
+            <button className="likedSongs" onClick={() => {alert("Not here yet...")}} onMouseEnter={() => updateHeart("solid")} onMouseLeave={() => updateHeart("regular")}>
+                <i className={`fa-${heart} fa-heart heartAction`}></i>
+                <span className="LikedSongsExpansion">Load All Liked</span>
+            </button>
+        </div>
         </>
     }
 }
