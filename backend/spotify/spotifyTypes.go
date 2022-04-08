@@ -4,24 +4,6 @@ import (
 	"spotify-downloader/models"
 )
 
-type playlistTracks struct {
-	Tracks struct {
-		Items []struct {
-			Added_at string
-			Is_local bool
-			Track    track
-		}
-	}
-}
-
-func (p *playlistTracks) toTracks() []track {
-	tracks := make([]track, 0, len(p.Tracks.Items))
-	for _, v := range p.Tracks.Items {
-		tracks = append(tracks, v.Track)
-	}
-	return tracks
-}
-
 type albumTracks struct {
 	Name   string
 	Images []struct {
@@ -56,6 +38,20 @@ type track struct {
 	}
 
 	Preview_url string
+}
+
+type tracksObject struct {
+	Items []struct {
+		Track track
+	}
+}
+
+func (t *tracksObject) toTrackSlice() []track {
+	tracks := make([]track, 0, len(t.Items))
+	for _, v := range t.Items {
+		tracks = append(tracks, v.Track)
+	}
+	return tracks
 }
 
 func toModelsPlaylist(tracksIn []track) models.Playlist {

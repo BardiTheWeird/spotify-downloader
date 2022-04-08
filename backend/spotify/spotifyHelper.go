@@ -53,9 +53,11 @@ func (s *SpotifyHelper) GetPlaylistById(id, linkType, accessToken string) (model
 			var modelsPlaylist models.Playlist
 			switch linkType {
 			case "playlists":
-				var playlist playlistTracks
+				var playlist struct {
+					Tracks tracksObject
+				}
 				json.NewDecoder(response.Body).Decode(&playlist)
-				modelsPlaylist = toModelsPlaylist(playlist.toTracks())
+				modelsPlaylist = toModelsPlaylist(playlist.Tracks.toTrackSlice())
 			case "albums":
 				var album albumTracks
 				json.NewDecoder(response.Body).Decode(&album)
@@ -96,6 +98,43 @@ func (s *SpotifyHelper) GetPlaylistById(id, linkType, accessToken string) (model
 		playlist, responseStatus = doRequest()
 	}
 	return playlist, responseStatus
+}
+
+func (s *SpotifyHelper) GetSavedTracks(accessToken string) (models.Playlist, GetPlaylistResponseStatus) {
+	tracks := make([]track, 0)
+	nextTracksUrl := "https://api.spotify.com/v1/me/tracks?offset=0&limit=50"
+	for nextTracksUrl != "" {
+		req, _ := http.NewRequest("GET", nextTracksUrl, nil)
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("Authorization", accessToken)
+		http.DefaultClient.Do(req)
+
+		response, err := http.DefaultClient.Do(req)
+		// actual error with a request or connectivity
+		if err != nil {
+			log.Printf("error sending a request to %s: %s\n", req.URL, err)
+			return models.Playlist{}, ErrorSendingRequest
+		}
+		switch response.StatusCode {
+		case 400, 401:
+			return models.Playlist{}, BadOrExpiredToken
+		case 403:
+			return models.Playlist{}, BadOAuth
+		case 429:
+			return models.Playlist{}, ExceededRateLimits
+		}
+
+		var savedTracksPage struct {
+			tracksObject
+			Next string `json:"next"`
+		}
+		json.NewDecoder(response.Body).Decode(&savedTracksPage)
+		tracks = append(tracks, savedTracksPage.toTrackSlice()...)
+
+		nextTracksUrl = savedTracksPage.Next
+	}
+
+	return toModelsPlaylist(tracks), Ok
 }
 
 func (s *SpotifyHelper) GetPublicAuthorizationToken() (string, bool) {

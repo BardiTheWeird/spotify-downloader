@@ -34,7 +34,7 @@ export function OAuthUrlProvider(props) {
     }, [clientId]);
 
     return <OAuthUrlContext.Provider value={[
-      `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${codeChallenge}`, 
+      `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&redirect_uri=${appUrl}/callback&code_challenge_method=S256&code_challenge=${codeChallenge}&scope=user-read-private,playlist-read-private,user-library-read`, 
       [clientId, updateClientId]]}>
         {props.children}
     </OAuthUrlContext.Provider>
