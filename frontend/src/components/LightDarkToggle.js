@@ -10,7 +10,7 @@ export function LightDarkToggle({isDark, updateisDark, LightDark}) {
         <div className='App-header-info symbolTranslate'>
         { 
             LightDark() == "Light" &&
-                <i className="fa-solid fa-moon"></i>
+                <i className="fa-regular fa-moon"></i>
             || <i className="fa-solid fa-sun"></i>
         }
         </div>

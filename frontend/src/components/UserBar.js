@@ -127,7 +127,7 @@ export function UserBar() {
                 onMouseLeave={() => updateHeart("regular")}>
                 
                 <i className={`fa-${heart} fa-heart heartAction`}></i>
-                <span className="LikedSongsExpansion">Load All Liked</span>
+                <span className="LikedSongsExpansion">Get All Liked</span>
             </button>
         </div>
         </>
