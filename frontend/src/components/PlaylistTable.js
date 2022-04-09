@@ -195,7 +195,7 @@ export function PlaylistTable({playlist, downloadPath}) {
     
     return (
       <>
-      {playlist == 'updating' && <div>SPINNER THINGY</div> ||
+      {playlist == 'updating' && <div><img src={"./icon.ico"} className='Spinney-vinney'/></div> ||
       <>
       <div className='inline-buttons'>
           <button className='DownloadButton' onClick={() => {
