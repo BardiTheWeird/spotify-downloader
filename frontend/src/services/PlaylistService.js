@@ -22,11 +22,9 @@ export function PlaylistProvider({children}) {
     const baseUrl = useBaseUrl();
 
     async function switchCheck(response) {
-      console.log('response:', response)
       switch (response.status) {
         case 200:
             let playlist = await response.json();
-            console.log('response body:', playlist);
             updatePlaylist(playlist.tracks);
           break;
         case 400:
@@ -45,13 +43,16 @@ export function PlaylistProvider({children}) {
     }
 
     async function submitPlaylistLink(spotifyLink) {
-        let response = await authorizedFetch(`${baseUrl}/spotify/playlist?link=${spotifyLink}`);
+        const responsePromise = authorizedFetch(`${baseUrl}/spotify/playlist?link=${spotifyLink}`);
+        updatePlaylist('updating');
+        const response = await responsePromise;
         await switchCheck(response);
     }
 
-    console.log(localStorage.getItem('access token'))
     async function getFavourites() {
-      let response = await authorizedFetch(`${baseUrl}/spotify/saved`);
+      const responsePromise = authorizedFetch(`${baseUrl}/spotify/saved`);
+      updatePlaylist('updating');
+      const response = await responsePromise;
       await switchCheck(response);
   }
 

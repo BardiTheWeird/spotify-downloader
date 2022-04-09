@@ -9,10 +9,27 @@ export function PlaylistTable({playlist, downloadPath}) {
     // a workaround for forcing a rerender
     const [, setForceUpdate] = React.useState(Date.now());
     const isDownloading = React.useRef(false);
-    const downloadCounter = React.useRef(0);
     const [tracks, updateTracks] = React.useState([]);
-  
+    const isCancelling = React.useRef(false);
+
+    const downloadCounter = React.useRef(0);
+    function incrementDownloadCounter() {
+      downloadCounter.current++;
+    }
+    function decrementDownloadCounter() {
+      downloadCounter.current--;
+      if (downloadCounter.current == 0) {
+        isDownloading.current = false;
+        isCancelling.current = false
+        setForceUpdate(Date.now());
+      }
+    }
+
     React.useEffect(() => {
+      if (playlist == 'updating') {
+        return;
+      }
+
       updateTracks(playlist.map(track => {
         return {...track,
           isPlaying: false,
@@ -29,16 +46,24 @@ export function PlaylistTable({playlist, downloadPath}) {
       tracks.forEach(track => { 
         if (track.checked) {
           track.status = 'Pending'
-          downloadCounter.current++;
+          incrementDownloadCounter();
         }
-      })
-      updateTracks(tracks);
+      });
+      updateTracks([...tracks]);
   
       // start download
-      tracks.forEach(async (track, index) => {
+      const pushTrackDownload = createThrottledFunction(async (track, index) => {
         if (!track.checked) {
           return;
         }
+        if (isCancelling.current) {
+          track.status = 'Cancelled';
+          updateTracks([...tracks]);
+
+          decrementDownloadCounter();
+          return;
+        }
+
         let url = `${baseUrl}/download/start`;
         let downloadFolder = downloadPath;
         if (!downloadFolder) {
@@ -68,15 +93,12 @@ export function PlaylistTable({playlist, downloadPath}) {
           }),
         });
         if (downloadResponse.status !== 204) {
-          downloadCounter.current--;
-          if (downloadCounter.current == 0) {
-            isDownloading.current = false;
-            setForceUpdate(Date.now());
-          }
+          decrementDownloadCounter();
         }
+        let updatePromise = null;
         switch (downloadResponse.status) {
           case 204:
-            UpdateDownloadStatus(index);
+            updatePromise = UpdateDownloadStatus(index);
             if (!isDownloading.current) {
               CancelDownload(index);
             }
@@ -102,9 +124,12 @@ export function PlaylistTable({playlist, downloadPath}) {
             break;
         }
         
-        const copiedTracks = [...tracks];
-        updateTracks(copiedTracks);
-      })
+        updateTracks([...tracks]);
+
+        await updatePromise;
+      }, 10);
+
+      tracks.forEach((track, index) => pushTrackDownload(track, index));
     }
   
     async function UpdateDownloadStatus(trackIndex) {
@@ -142,11 +167,7 @@ export function PlaylistTable({playlist, downloadPath}) {
           updateTracks(copiedTracks);
           await new Promise(r => setTimeout(r, 1000));
           if (downloadEntry.status >= 2) {
-            downloadCounter.current--;
-            if (downloadCounter.current == 0) {
-              isDownloading.current = false;
-              setForceUpdate(Date.now());
-            }
+            decrementDownloadCounter();
             break;
           }
         }
@@ -174,7 +195,9 @@ export function PlaylistTable({playlist, downloadPath}) {
     
     return (
       <>
-        <div className='inline-buttons'>
+      {playlist == 'updating' && <div>SPINNER THINGY</div> ||
+      <>
+      <div className='inline-buttons'>
           <button className='DownloadButton' onClick={() => {
               if (!downloadPath) {
                 return alert("Please choose directory using the Browse button")
@@ -190,6 +213,7 @@ export function PlaylistTable({playlist, downloadPath}) {
           </button>
           <button className='CancelDownloadButton' onClick={() => {
               SwitchIsDownloading();
+              isCancelling.current = true;
               tracks.forEach((track, id) => CancelDownload(id))
             }
           }
@@ -228,9 +252,9 @@ export function PlaylistTable({playlist, downloadPath}) {
                 <tr key={track.id}>
                   <td><input type="checkbox" className="checkmark" checked={track.checked} onChange={
                     e => {
-                      const clonedTracks = [...tracks];
-                      clonedTracks[index].checked = !clonedTracks[index].checked;
-                      updateTracks(clonedTracks);
+                      const copiedTracks = [...tracks];
+                      copiedTracks[index].checked = !copiedTracks[index].checked;
+                      updateTracks(copiedTracks);
                     }
                   }
                   disabled={isDownloading.current}
@@ -242,7 +266,7 @@ export function PlaylistTable({playlist, downloadPath}) {
                     if (pausedTrackIndex !== index) {
                       tracks[pausedTrackIndex].isPlaying = !tracks[pausedTrackIndex].isPlaying;
                     }
-                    updateTracks(tracks);
+                    updateTracks([...tracks]);
                   }}>{
                     tracks[index].isPlaying == false &&
                     <i className="fa-solid fa-play Preview"></i> ||
@@ -261,6 +285,33 @@ export function PlaylistTable({playlist, downloadPath}) {
           }
           </tbody>
         </table>
-      </>
+        </>
+      }</>
     )
   }
+
+function createThrottledFunction(f, maxParallel) {
+  const queuedWork = [];
+  let capacity = maxParallel;
+  
+  async function doWork(...args) {
+      capacity--;
+      while (true) {
+          await f(...args);
+          if (!queuedWork.length) {
+              break;
+          }
+          args = queuedWork.shift();
+      }
+      capacity++;
+  }
+  
+  return (...args) => {
+      if (capacity > 0) {
+          doWork(...args);
+      }
+      else {
+          queuedWork.push(args);
+      }
+  }
+}

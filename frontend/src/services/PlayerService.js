@@ -14,6 +14,10 @@ export function PlayerProvider({children}) {
     const spotifyPlaylist = usePlaylist();
 
     React.useEffect(() => {
+        if (spotifyPlaylist == 'updating') {
+            return;
+        }
+        
         updateLoadedTracks(
             spotifyPlaylist.map(x => {
                 return new Howl({
