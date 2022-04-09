@@ -19,7 +19,7 @@ export function OAuthUrlProvider(props) {
 
     React.useEffect(async () => {
       // read clientId from localStorage
-      updateClientId(localStorage.getItem('clientId'));
+      updateClientId(localStorage.getItem('clientId') || '');
 
       // update code challenge
       const codeVerifier = generateRandomString(64);
@@ -27,7 +27,7 @@ export function OAuthUrlProvider(props) {
       localStorage.setItem('code_verifier', codeVerifier);
 
       updateAppUrl(await ipcRenderer.invoke('appUrl'));
-    },[]);
+    }, []);
 
     React.useEffect(() => {
       localStorage.setItem('clientId', clientId);

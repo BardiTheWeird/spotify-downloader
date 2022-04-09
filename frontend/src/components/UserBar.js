@@ -5,9 +5,6 @@ import { useGetFavourites } from "../services/PlaylistService";
 import { UserContext } from '../services/UserService'
 import { authorizedFetch } from '../utilities'
 
-const { ipcRenderer } = window.require('electron');
-
-
 export function UserBar() {
     const oauthUrl = useOAuthUrl();
     const [clientId, updateClientId] = useClientId();
