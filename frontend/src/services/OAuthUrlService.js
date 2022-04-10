@@ -1,6 +1,6 @@
 import React from "react";
 
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = (window.require && window.require('electron')) || (window.opener && window.opener.require('electron'));
 
 const OAuthUrlContext = React.createContext();
 
@@ -15,22 +15,27 @@ export function useClientId() {
 export function OAuthUrlProvider(props) {
     const [appUrl, updateAppUrl] = React.useState();
     const [codeChallenge, updateCodeChallenge] = React.useState();
-    const [clientId, updateClientId] = React.useState("");
+    const [clientId, updateClientId] = React.useState(localStorage.getItem('clientId') || '');
 
-    React.useEffect(async () => {
-      // read clientId from localStorage
-      updateClientId(localStorage.getItem('clientId') || '');
+    React.useEffect(() => {
+      (async () => {
+        // don't overwrite stuff if opened as a popup
+        if (window.opener) {
+          return;
+        }
 
-      // update code challenge
-      const codeVerifier = generateRandomString(64);
-      updateCodeChallenge(await generateCodeChallenge(codeVerifier));
-      localStorage.setItem('code_verifier', codeVerifier);
+        // update code challenge
+        const codeVerifier = generateRandomString(64);
+        updateCodeChallenge(await generateCodeChallenge(codeVerifier));
+        localStorage.setItem('code_verifier', codeVerifier);
 
-      updateAppUrl(await ipcRenderer.invoke('appUrl'));
+        updateAppUrl(await ipcRenderer.invoke('appUrl'));
+      })()
     }, []);
 
     React.useEffect(() => {
       localStorage.setItem('clientId', clientId);
+      window.self.clientId = clientId;
     }, [clientId]);
 
     return <OAuthUrlContext.Provider value={[

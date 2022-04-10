@@ -1,13 +1,12 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { useClientId } from "../services/OAuthUrlService";
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = (window.require && window.require('electron')) || (window.opener && window.opener.require('electron'));
 
 export function AuthCallback() {
-    const navigate = useNavigate();
-    const [clientId] = useClientId();
-
-    React.useEffect(async () => {
+  const [clientId] = useClientId();
+  React.useEffect(() => {
+    (async () => {
+      console.log('clientId:', clientId);
       if (!clientId) {
         return;
       }
@@ -22,12 +21,16 @@ export function AuthCallback() {
         method: "POST",
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
+      console.log('response:', response);
       const responseBody = await response.json();
+      console.log('responseBody:', responseBody);
   
       localStorage.setItem('access token', responseBody.access_token || '');
   
-      navigate('/');
-    }, [clientId])
+      window.opener.onLoginSuccess(responseBody.access_token || '');
+      window.close();
+    })();
+  }, [clientId]);
   
-    return <></>;
-  }
+  return <></>;
+}

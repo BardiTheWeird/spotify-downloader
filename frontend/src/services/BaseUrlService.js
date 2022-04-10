@@ -1,6 +1,6 @@
 import React from "react";
 
-const {ipcRenderer} = window.require('electron');
+const {ipcRenderer} = (window.require && window.require('electron')) || (window.opener && window.opener.require('electron'));
 
 const BaseUrlContex = React.createContext();
 

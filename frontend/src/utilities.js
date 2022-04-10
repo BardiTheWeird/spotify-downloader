@@ -1,5 +1,5 @@
 export async function authorizedFetch(input, init) {
-  let accessToken = localStorage.getItem('access token');
+  const accessToken = localStorage.getItem('access token');
   if (accessToken) {
     init = init || {};
     init.headers = {

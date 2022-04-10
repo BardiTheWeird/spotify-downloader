@@ -4,7 +4,7 @@ import { useYtdlFound, useFfmpegFound } from "../services/FeaturesFoundService";
 import { useBaseUrl } from "../services/BaseUrlService";
 import { FaqStatusContext } from "../services/FaqService";
 
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = (window.require && window.require('electron')) || (window.opener && window.opener.require('electron'));
 
 export function FeatureConfiguration() {
     const [faqStatus] = React.useContext(FaqStatusContext)

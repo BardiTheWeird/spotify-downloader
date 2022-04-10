@@ -3,7 +3,7 @@ import React from "react";
 import { usePlaylist, useSubmitPlaylistLink } from "../services/PlaylistService";
 import { PlaylistTable } from './PlaylistTable';
 
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = (window.require && window.require('electron')) || (window.opener && window.opener.require('electron'));
 
 export function InputBar() {
     const [formData, updateFormData] = React.useState();
