@@ -9,17 +9,6 @@
   min-height: 100vh;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
 .Dark {
   color: gainsboro;
   background-color: #282c34;
@@ -42,7 +31,6 @@ input::placeholder {
   color: rgb(177, 175, 175);
 }
 
-/* BECAUSE WEBKIT AUTOFILL IS FULL OF SHIT*/
 .Dark input[type="text"]:-webkit-autofill {
   -webkit-text-fill-color: gainsboro;
   -webkit-box-shadow: 0 0 0px 1000px #1f2125 inset;
@@ -85,15 +73,6 @@ input::placeholder {
 
 .App-link {
   color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .SearchBar {
@@ -264,73 +243,6 @@ input::placeholder {
   margin-left: auto;
   margin-right: auto;
   width: 300px;
-}
-
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 25px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 19px;
-  width: 19px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #343942;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #343942;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(36px);
-  -ms-transform: translateX(36px);
-  transform: translateX(36px);
-}
-
-.slider:after {
-  background-color: black;
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
 }
 
 .uselessButton {
@@ -508,10 +420,39 @@ input:checked + .slider:before {
 }
 
 .userright {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
   position: absolute;
-  top: 45px;
-  left: 3px;
-  padding-right: 10px;
+  top: 35px;
+  right: 10px;
+  transition: 200ms;
+}
+
+.Light .userright {
+  color: gainsboro;
+  background-color: #343942;
+}
+
+.Light .userright:hover {
+  box-shadow: 0 0 7px #343942;
+}
+
+.Dark .userright {
+  color: #343942;
+  background-color: gainsboro;
+}
+
+.Dark .userright:hover {
+  box-shadow: 0 0 7px gainsboro;
+}
+
+.symbTransl {
+  transform: translate(0px, -1px);
 }
 
 .Dark .uselessButton {
@@ -571,24 +512,6 @@ input:checked + .slider:before {
   background-color: rgb(255, 255, 255);;
 }
 
-.symbolTranslate {
-  pointer-events: none;
-  padding-left: 45px;
-}
-
-.symbolTranslate {
-  transform: translate(0px, -21px);
-}
-
-.Light .symbolTranslate {
-  transform: translate(-38px, -21px);
-  color: gainsboro
-}
-
-.Dark .symbolTranslate {
-  transform: translate(-4px, -21px);
-  color: #343942
-}
 
 .arrowdown {
   margin-left: 2px;
@@ -1028,12 +951,16 @@ input:checked + .slider:before {
 
 .dragBarRight {
   position: absolute;
-  width: 24.5vw;
+  width: 33vw;
   top: 0%;
   height: 60px;
   left: 56vw;
   z-index: -100;
   -webkit-app-region: drag;
+}
+
+.userleft .dragBarLeft {
+  left: 120px;
 }
 
 .controls {

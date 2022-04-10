@@ -66,6 +66,8 @@ return <>{
                 Log In
             </div> 
         }
+        <span className='dragBarLeft'></span>
+        <span className='dragBarRight'></span>
     </div>
             
 
