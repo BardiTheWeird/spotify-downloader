@@ -18,6 +18,8 @@ import { FeatureConfiguration } from './components/FeaturesConfiguration';
 
 export const isDarkInitialValue = localStorage.getItem("DarkMode") === "true";
 
+const { ipcRenderer } = (window.require && window.require('electron')) || (window.opener && window.opener.require('electron'));
+
 export function App() {
   const baseUrl = useBaseUrl();
 
@@ -65,10 +67,15 @@ export function App() {
             </>
             }
             
-            
             </>
         }/>
     </Routes>
+    <div className='controls'>
+      <button className='controlButton' onClick={() => ipcRenderer.invoke('winMinimize')}><i className='fa-regular fa-window-minimize controlSymb'></i></button>
+      <button className='controlButton' onClick={() => ipcRenderer.invoke('winMaximize')}><i className='fa-regular fa-window-maximize controlSymb'></i></button>
+      <button className='controlButton' onClick={() => ipcRenderer.invoke('winClose')}><i className='fa-regular fa-window-close controlSymb'></i></button>
+    </div>
+    
     </div>
   );
 }

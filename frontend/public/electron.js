@@ -117,7 +117,19 @@ function createWindow() {
       enableRemoteModule: true,
       contextIsolation: false,
     },
-    autoHideMenuBar: true,
+    // autoHideMenuBar: true,
+    frame: false,
+  });
+
+  ipcMain.handle('winClose', () => win.close());
+  ipcMain.handle('winMinimize', () => win.minimize());
+  ipcMain.handle('winMaximize', () => {
+    if (win.isMaximized()) {
+      win.unmaximize();
+    }
+    else {
+      win.maximize()
+    }
   });
 
   // and load the index.html of the app.

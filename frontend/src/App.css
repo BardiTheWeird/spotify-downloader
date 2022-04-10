@@ -422,11 +422,8 @@ input:checked + .slider:before {
   flex-direction: row;
   align-content: center;
   vertical-align: 50%;
-  /* position: absolute; */
   height: 32px;
   width: fit-content;
-  /* top: 5px;
-  left: 0%; */
   padding-left: 10px;
   padding-right: 5px;
   border-style: solid;
@@ -512,8 +509,8 @@ input:checked + .slider:before {
 
 .userright {
   position: absolute;
-  top: 5px;
-  right: 0%;
+  top: 45px;
+  left: 3px;
   padding-right: 10px;
 }
 
@@ -649,6 +646,7 @@ input:checked + .slider:before {
 
 .FAQ {
   position: absolute;
+  z-index: 100;
   top: 10px;
   left: 50%;
   width: 40px;
@@ -866,13 +864,10 @@ input:checked + .slider:before {
 }
 
 .likedSongs {
-  /* transform: translate(); */
   display: flex;
   flex-direction: row;
   height: 32px;
   width: fit-content;
-  /* padding-left: 10px;
-  padding-right: 10px; */
   border-style: solid;
   border-width: 2px;
   border-radius: 20px;
@@ -888,6 +883,7 @@ input:checked + .slider:before {
 
 .likedSongs:hover .LikedSongsExpansion {
   position: relative;
+  z-index: 100000;
   padding-left: 5px;
   padding-right: 5px;
   visibility: visible;
@@ -1014,4 +1010,70 @@ input:checked + .slider:before {
   100% {
     transform: rotate(0deg)
   }
+}
+
+.dragBarLeft {
+  position: absolute;
+  width: 32.5vw;
+  top: 0%;
+  height: 60px;
+  left: 135px;
+  z-index: -100;
+  -webkit-app-region: drag;
+}
+
+.userContainer:hover .dragBarLeft {
+  transform: translate(0px, 200px);
+}
+
+.dragBarRight {
+  position: absolute;
+  width: 24.5vw;
+  top: 0%;
+  height: 60px;
+  left: 56vw;
+  z-index: -100;
+  -webkit-app-region: drag;
+}
+
+.controls {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  top: 5px;
+  right: 12px;
+  width: 72px;
+}
+
+.controlButton {
+  width: 25px;
+  height: 25px;
+  background: none;
+  border: none;
+  margin-left: 1px;
+  margin-right: 1px ;
+}
+
+.Dark .controlButton {
+  color: gainsboro 
+}
+
+.Dark .controlButton:hover {
+  background-color: #444549;
+  border-radius: 2px;
+}
+
+.Light .controlButton {
+  color: darkblue;
+}
+
+.Light .controlButton:hover {
+  background-color: rgb(243, 240, 240);
+  border-radius: 2px;
+  color: darkblue;
+}
+
+.controlSymb {
+  transform: translate(-1px, 2px);
+  font-size: 15px;
 }

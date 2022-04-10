@@ -143,6 +143,8 @@ return <>{
             <i className={`fa-${heart} fa-heart heartAction`}></i>
             <span className="LikedSongsExpansion">Get All Liked</span>
         </button>
+        <span className='dragBarLeft'></span>
+        <span className='dragBarRight'></span>
     </div>
 }</>
 }
