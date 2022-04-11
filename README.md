@@ -20,7 +20,7 @@ An application for downloading of MP3 tracks using Spotify playlist data.
 
 ## Introduction
 
-[Spotify Downloader](https://github.com/BardiTheWeird/spotify-downloader/tree/release-0.1.0) is an application which allows user to download desired musical tracks using [Spotify](https://open.spotify.com) playlist or album data from [YouTubeMusic](https://music.youtube.com/). Using the [Spotify's](https://open.spotify.com) metadata application gets a link to a [YouTubeMusic](https://music.youtube.com/) storage using [SongLink's](https://odesli.co) API.
+[Spotify Downloader](https://github.com/BardiTheWeird/spotify-downloader/tree/release-0.1.0) is an application which allows user to download desired musical tracks using [Spotify](https://open.spotify.com) playlist or album data from [YouTubeMusic](https://music.youtube.com/). Using the [Spotify's](https://open.spotify.com) metadata application gets a link to a [YouTubeMusic](https://music.youtube.com/) storage using [SongLink's](https://odesli.co) API. Also authorized user can download liked tracks.
 
 ## How to work with
 
@@ -30,7 +30,7 @@ First of all you'll need to install several extra applications:
 
 - [FFMPEG](https://www.ffmpeg.org/download.html). Since downloaded tracks will be in MP4 format we'd need to convert them. Simple and easy tool for it is a FFMPEG, which is used by the [Spotify Downloder](https://github.com/BardiTheWeird/spotify-downloader/tree/release-0.1.0).
 
-After all needed resources are installed and application is launched you'd need to give application a permition to authorize. For this User will need to Log In into the [Spotify](https://open.spotify.com). Acquired Authorization token will be used to access publicly availiable information. To log in User will need to click on LOGIN link and login into the Spotify using OAuth interface. Without authorization further query and download cannot be acomplished. 
+User can download tracks from public playlist without authorization but to load private playlist (e.g. Liked Tracks) user will need to log in [Spotify for developers](https://developer.spotify.com/dashboard/), create a formal application and then get a Client ID which will be used for authorization using Spotify OAuth interface. To load Liked tracks user must click on Get All Liked button in the top left corner near User Name.
 
 ### Query
 
@@ -44,11 +44,15 @@ To chose a Directory for a download User will have 2 options:
  - Insert a directory into the field.
  - Choose a directory using "Browse" button.
 
+### Preview
+
+User can preview tracks availiable for download using Play button on top of the track's cover art.
+
 ### Download
 
 To download tracks from the generated table User will need to choose the tracks User needs using the selectors. By default all tracks are chosen. To unchoose or choose all User can click on "All" selector.
 
-To begin download process User will need to click "Download Selected" button. To cancel - "Cancel Download".
+To begin download process User will need to click "Download Selected" button. To cancel - "Cancel Download". Quantity of the simultaniously downloading tracks is limited to 10. After a complition of any track from the bunch, next one will start downloading.
 
 In download process User will get notifications on Download Status:
 - N/A - Default state, no informaion is acquired before the "Download Button" click.
@@ -59,7 +63,7 @@ In download process User will get notifications on Download Status:
 - Convertation Failed - convertation of track is failed.
 - Cancelled - User cancelled the download.
 
-User may need to authorize again after a while due to the authorization expiration (*will be handled later*).
+User may need to authorize again after a while due to the authorization expiration.
 
 ### Cancel Download
 
