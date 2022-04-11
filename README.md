@@ -14,6 +14,7 @@ An application for downloading of MP3 tracks using Spotify playlist data.
   - [How to work with](#how-to-work-with)
     - [Query](#query)
     - [Directory Choice](#directory-choice)
+    - [Preview](#preview)
     - [Download](#downloaded)
     - [Cancel Download](#cancel-download)
 
